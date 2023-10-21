@@ -1,0 +1,31 @@
+[설치경로]
+https://flutter.dev/docs/get-started/install
+
+[flutter 소스 설치]
+git clone https://github.com/flutter/flutter.git -b stable
+
+[path 설정]
+cd flutter
+flutter_console.bat
+
+[윈도우 개발 가능하게 설정]
+flutter config --enable-windows-desktop
+
+[의존성 검사]
+flutter doctor
+
+[프로젝트 생성]
+flutter create testapp
+cd testapp
+
+[빌드(build\windows\runner\Release)]
+flutter build windows
+
+[빌드&런]
+flutter run -d windows
+
+[소스 수정 후 콘솔에서 r누르면 리로드 됨]
+lib/main.dart
+
+[pubspec.yaml 갱신]
+flutter pub get
