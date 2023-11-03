@@ -21,7 +21,7 @@ cd testapp
 [빌드(build\windows\runner\Release)]
 flutter build windows
 
-[빌드&런]
+[런]
 flutter run -d windows
 
 [소스 수정 후 콘솔에서 r누르면 리로드 됨]
