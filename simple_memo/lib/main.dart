@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 //import 'package:simple_memo/headBar.dart';
 import 'package:simple_memo/ThirdPage.dart';
 import 'package:simple_memo/HomeBody.dart';
+import 'package:simple_memo/bottom_bar1.dart';
+import 'package:simple_memo/bottom_bar2.dart';
+import 'package:simple_memo/head_bar1.dart';
+import 'package:simple_memo/headBar.dart';
+import 'package:simple_memo/float_button1.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -62,39 +68,41 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       //appBar: headBar(),
-      appBar:AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-        leading: IconButton(
-          // 간단한 위젯이나 타이틀들을 앱바의 왼쪽에 위치시키는 것을 말함
-          icon: Icon(Icons.menu), // 아이콘
+      appBar: AppBar(
+      backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      title: Text(widget.title),
+      leading: IconButton(
+        // 간단한 위젯이나 타이틀들을 앱바의 왼쪽에 위치시키는 것을 말함
+        icon: Icon(Icons.menu), // 아이콘
+        onPressed: () {
+          // 버튼을 눌렀을 때
+          print("menu button is clicked");
+        },
+      ),
+      actions: [ // action 속성은 복수의 아이콘 버튼 등을 오른쪽에 배치할 때
+        IconButton( // 간단한 위젯이나 타이틀들을 앱바의 왼쪽에 위치시키는 것을 말함
+          icon: Icon(Icons.shopping_cart), // 아이콘
           onPressed: () {
             // 버튼을 눌렀을 때
-            print("menu button is clicked");
+            print("shopping_cart is clicked");
           },
         ),
-        actions: [ // action 속성은 복수의 아이콘 버튼 등을 오른쪽에 배치할 때
-          IconButton( // 간단한 위젯이나 타이틀들을 앱바의 왼쪽에 위치시키는 것을 말함
-            icon: Icon(Icons.shopping_cart), // 아이콘
-            onPressed: () {
-              // 버튼을 눌렀을 때
-              print("shopping_cart is clicked");
-            },
-          ),
-          IconButton(  // 간단한 위젯이나 타이틀들을 앱바의 왼쪽에 위치시키는 것을 말함
-            icon: Icon(Icons.search), // 아이콘
-            onPressed: () {
-              // 버튼을 눌렀을 때
-              print("search is clicked");
-            },
-          )
-        ],
-      ), 
-      body: HomeBody(), // 바디 부분에 홈 바디를 둔다.
-      /*Center(
+        IconButton(  // 간단한 위젯이나 타이틀들을 앱바의 왼쪽에 위치시키는 것을 말함
+          icon: Icon(Icons.search), // 아이콘
+          onPressed: () {
+            // 버튼을 눌렀을 때
+            print("search is clicked");
+          },
+        )
+      ],
+    ),
+      //body: HomeBody(), // 바디 부분에 홈 바디를 둔다.
+      body:
+      Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            HomeBody(),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -117,12 +125,28 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ],
         ),
-      ),*/
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.thumb_up),
       ),
+      floatingActionButton: FloatButton1(),
+      /*floatingActionButton: SizedBox(
+        width: 150.0,
+        height: 60.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            FloatingActionButton(
+              onPressed: _incrementCounter,
+              tooltip: 'Increment',
+              child: const Icon(Icons.thumb_up),
+            ),
+            FloatingActionButton(
+              onPressed: _incrementCounter,
+              tooltip: 'Increment',
+              child: const Icon(Icons.thumb_up),
+            ),            
+          ],
+        ),
+      ),*/
+      bottomNavigationBar: BottomBar1()
     );
   }
 }
