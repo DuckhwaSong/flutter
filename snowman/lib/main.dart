@@ -1,6 +1,33 @@
 import 'package:flutter/material.dart';
 import 'setting.dart';
 
+import 'package:http/http.dart' as http;
+
+class httpCurl {
+  Map<String, String> headers = {};
+
+  Future<String> get(String url) async {
+    http.Response response = await http.get(url, headers: headers);
+    updateCookie(response);
+    return response.body;
+  }
+
+  Future<String> post(String url, dynamic data) async {
+    http.Response response = await http.post(url, body: data, headers: headers);
+    updateCookie(response);
+    return response.body;
+  }
+
+  void updateCookie(http.Response response) {
+    String? rawCookie = response.headers['set-cookie'];
+    if (rawCookie != null) {
+      int index = rawCookie.indexOf(';');
+      headers['cookie'] =
+          (index == -1) ? rawCookie : rawCookie.substring(0, index);
+    }
+  }
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -35,11 +62,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double _currentSliderPrimaryValue = 0.2;
   double _currentSliderSecondaryValue = 0.5;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +76,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
                         Text(
-              '$_currentSliderPrimaryValue',
+              '*$_currentSliderPrimaryValue',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             Slider(

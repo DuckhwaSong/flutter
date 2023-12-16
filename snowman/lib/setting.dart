@@ -1,69 +1,35 @@
 import 'dart:async';  // for File
 import 'dart:io';     // for File
-import 'dart:math';   // for Random
+//import 'dart:math';   // for Random
 import 'dart:convert';   // for Json
 
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-
-class CounterStorage {
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    return directory.path;
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/counter.txt');
-  }
-
-  Future<int> readCounter() async {
-    try {
-      final file = await _localFile;
-
-      // Read the file
-      final contents = await file.readAsString();
-
-      return int.parse(contents);
-    } catch (e) {
-      // If encountering an error, return 0
-      return 0;
-    }
-  }
-
-  Future<File> writeCounter(int counter) async {
-    final file = await _localFile;
-
-    // Write the file
-    return file.writeAsString('$counter');
-  }
-}
+import 'package:encrypt/encrypt.dart' as enc;
 
 class ConfigStorage {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
-
     return directory.path;
   }
 
   Future<File> get _localFile async {
     final path = await _localPath;
-    return File('$path/counter.txt');
+    return File('$path/config.json');
   }
 
-  /*Future<int> readConfig() async {
+  Future<Map<String, dynamic>> readConfig() async {
     try {
       final file = await _localFile;
 
       // Read the file
       final contents = await file.readAsString();
-
-      return String.parse(contents);
+      return jsonDecode(contents);
     } catch (e) {
-      // If encountering an error, return 0
-      return 0;
-  }*/
+      // If encountering an error, return map
+      return Map<String, dynamic>();
+    }
+  }
 
   Future<File> writeConfig(Map<String, dynamic> input) async {
     final file = await _localFile;
@@ -75,27 +41,50 @@ class ConfigStorage {
 
 class SettingPage extends StatelessWidget {
 
-  //final CounterStorage storage;
-  CounterStorage storage=new CounterStorage();
+  // 설정 변수
   ConfigStorage _config = new ConfigStorage();
 
-  final TextEditingController _idController = TextEditingController(text:'tets');
-  final TextEditingController _pwController = TextEditingController(text:'pwd');
-  final TextEditingController _noController = TextEditingController(text:'nono');
+  // 인풋컨트롤러
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _pwController = TextEditingController();
+  final TextEditingController _noController = TextEditingController();
 
-  int testConter=0;
-  String JsonString = '{"name":"red"}';
-  Map<String, dynamic> color = jsonDecode('{"name":"red"}');
   Map<String, dynamic> input = Map<String, dynamic>();
 
-  //print("$JsonString");
-  //input['no1']='111';
+  // 암복호화 툴
+  String encKey = 'SNOWMAN79SNOWMAN';
+  String encIV = '1A23B456C7890DFE';  
+  String encTools(String text){
+    final encrypter=enc.Encrypter(enc.AES(enc.Key.fromUtf8(this.encKey)));
+    return encrypter.encrypt(text,iv: enc.IV.fromUtf8(this.encIV)).base64;
+  }  
+  String decTools(String encString){
+    final encrypter=enc.Encrypter(enc.AES(enc.Key.fromUtf8(this.encKey)));
+    return encrypter.decrypt64(encString,iv: enc.IV.fromUtf8(this.encIV));
+  }
+  // [로그인]
+  // https://www.snowman.co.kr/portal/login/process
+  // goorm80/Kf80sdh123
+  
+  // [조회]
+  // https://www.snowman.co.kr/portal/mysnowman/myInfo/submain
+  // svcNo: K0QUhaLUsm+7o1UY+aWQBQ==
+
+  // [조회]
+  // https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty
+  // svcNo: /o7YzZ/LALiqpWEsEsXVzw==
 
   @override
   Widget build(BuildContext context) {
-    // 초기값 세팅
-    input['no2']='222';
-    input['no2']='333';
+    // 초기 저장 설정값 세팅
+    _config.readConfig().then((value) {
+      input = value;
+      //print("저장된 값:$input");
+      _idController.text = input['id'];
+      //_pwController.text = input['pw'];
+      _pwController.text = this.decTools(input['pwEnc']); // 비밀번호는 복호화
+      _noController.text = input['no'];
+    }); 
 
     return ScaffoldMessenger(
       child: Scaffold(
@@ -116,7 +105,7 @@ class SettingPage extends StatelessWidget {
                   padding: const EdgeInsets.only(top:20),
                 ),
                 SizedBox(
-                  width: 300,
+                  width: 320,
                   child: TextField(
                     controller: _idController,
                     //obscureText: true,
@@ -133,16 +122,17 @@ class SettingPage extends StatelessWidget {
                   padding: const EdgeInsets.only(top:20),
                 ),
                 SizedBox(
-                  width: 300,
+                  width: 320,
                   child: TextField(
-                    controller: _noController,
+                    controller: _pwController,
                     obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: '비밀번호',
                     ),
                     onChanged:(text){
-                      input['pw']=text;
+                      //input['pw']=text;
+                      input['pwEnc']=this.encTools(text);  // 비밀번호는 암호화
                     }
                   ),
                 ),  
@@ -150,9 +140,9 @@ class SettingPage extends StatelessWidget {
                   padding: const EdgeInsets.only(top:20),
                 ),
                 SizedBox(
-                  width: 300,
+                  width: 320,
                   child: TextField(
-                    controller: TextEditingController(text:'nono'),   // 초기값 설정
+                    controller: _noController,
                     //obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
@@ -173,25 +163,14 @@ class SettingPage extends StatelessWidget {
                       content: Text("설정이 저장되었습니다."),
                       duration: Duration(seconds: 3),
                     ));
-                    print(input);   // 입력값 확인
-                    JsonString = jsonEncode(input);
-                    print(JsonString);   // 입력값 확인
+                    //print("저장된 값:$input");         // 입력값 확인
                     _config.writeConfig(input);
-
-                    testConter=Random().nextInt(6)+1;
-                    storage.writeCounter(testConter);
-                    print("저장하는 값:$testConter");
-                    storage.readCounter().then((value) {
-                      testConter = value;
-                      print("저장된 값:$testConter");
-                    });
                   },
                   child: Text('저장'),
                 ),
               ],
             ),
           );}
-
         ),
       ),
     );
