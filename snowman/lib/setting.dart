@@ -40,7 +40,7 @@ class CounterStorage {
   }
 }
 
-/*class ConfigStorage {
+class ConfigStorage {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
 
@@ -52,7 +52,7 @@ class CounterStorage {
     return File('$path/counter.txt');
   }
 
-  Future<int> readConfig() async {
+  /*Future<int> readConfig() async {
     try {
       final file = await _localFile;
 
@@ -63,30 +63,40 @@ class CounterStorage {
     } catch (e) {
       // If encountering an error, return 0
       return 0;
-    }
-  }
+  }*/
 
-  Future<File> writeConfig(int counter) async {
+  Future<File> writeConfig(Map<String, dynamic> input) async {
     final file = await _localFile;
 
     // Write the file
-    return file.writeAsString('$counter');
+    return file.writeAsString(jsonEncode(input));
   }
-}*/
+}
 
 class SettingPage extends StatelessWidget {
 
   //final CounterStorage storage;
   CounterStorage storage=new CounterStorage();
+  ConfigStorage _config = new ConfigStorage();
+
+  final TextEditingController _idController = TextEditingController(text:'tets');
+  final TextEditingController _pwController = TextEditingController(text:'pwd');
+  final TextEditingController _noController = TextEditingController(text:'nono');
+
   int testConter=0;
   String JsonString = '{"name":"red"}';
   Map<String, dynamic> color = jsonDecode('{"name":"red"}');
+  Map<String, dynamic> input = Map<String, dynamic>();
 
   //print("$JsonString");
-
+  //input['no1']='111';
 
   @override
   Widget build(BuildContext context) {
+    // 초기값 세팅
+    input['no2']='222';
+    input['no2']='333';
+
     return ScaffoldMessenger(
       child: Scaffold(
         appBar: AppBar(
@@ -108,11 +118,15 @@ class SettingPage extends StatelessWidget {
                 SizedBox(
                   width: 300,
                   child: TextField(
+                    controller: _idController,
                     //obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'ID',
                     ),
+                    onChanged:(text){
+                      input['id']=text;
+                    }
                   ),
                 ),                  
                 Padding(
@@ -121,11 +135,15 @@ class SettingPage extends StatelessWidget {
                 SizedBox(
                   width: 300,
                   child: TextField(
+                    controller: _noController,
                     obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: '비밀번호',
                     ),
+                    onChanged:(text){
+                      input['pw']=text;
+                    }
                   ),
                 ),  
                 Padding(
@@ -134,11 +152,15 @@ class SettingPage extends StatelessWidget {
                 SizedBox(
                   width: 300,
                   child: TextField(
+                    controller: TextEditingController(text:'nono'),   // 초기값 설정
                     //obscureText: true,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: '전화번호(-제거)',
                     ),
+                    onChanged:(text){
+                      input['no']=text;
+                    }
                   ),
                 ),                  
                 Padding(
@@ -151,8 +173,10 @@ class SettingPage extends StatelessWidget {
                       content: Text("설정이 저장되었습니다."),
                       duration: Duration(seconds: 3),
                     ));
-
-                    print("ID : ");
+                    print(input);   // 입력값 확인
+                    JsonString = jsonEncode(input);
+                    print(JsonString);   // 입력값 확인
+                    _config.writeConfig(input);
 
                     testConter=Random().nextInt(6)+1;
                     storage.writeCounter(testConter);
