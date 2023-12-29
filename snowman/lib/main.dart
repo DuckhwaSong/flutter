@@ -1,32 +1,9 @@
 import 'package:flutter/material.dart';
 import 'setting.dart';
+import 'httpcurl.dart';
+import 'config.dart';
+import 'dataaccess.dart';
 
-import 'package:http/http.dart' as http;
-
-class httpCurl {
-  Map<String, String> headers = {};
-
-  Future<String> get(String url) async {
-    http.Response response = await http.get(url, headers: headers);
-    updateCookie(response);
-    return response.body;
-  }
-
-  Future<String> post(String url, dynamic data) async {
-    http.Response response = await http.post(url, body: data, headers: headers);
-    updateCookie(response);
-    return response.body;
-  }
-
-  void updateCookie(http.Response response) {
-    String? rawCookie = response.headers['set-cookie'];
-    if (rawCookie != null) {
-      int index = rawCookie.indexOf(';');
-      headers['cookie'] =
-          (index == -1) ? rawCookie : rawCookie.substring(0, index);
-    }
-  }
-}
 
 void main() {
   runApp(const MyApp());
@@ -61,11 +38,14 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   double _currentSliderPrimaryValue = 0.2;
   double _currentSliderSecondaryValue = 0.5;
-
-
+  
+  dataAccess _dtAcc = new dataAccess();
 
   @override
   Widget build(BuildContext context) {
+    var input = _dtAcc.setLogin();
+    print("저장된 값:$input"); 
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,

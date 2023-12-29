@@ -1,43 +1,7 @@
-import 'dart:async';  // for File
-import 'dart:io';     // for File
-//import 'dart:math';   // for Random
-import 'dart:convert';   // for Json
-
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 
-class ConfigStorage {
-  Future<String> get _localPath async {
-    final directory = await getApplicationDocumentsDirectory();
-    return directory.path;
-  }
-
-  Future<File> get _localFile async {
-    final path = await _localPath;
-    return File('$path/config.json');
-  }
-
-  Future<Map<String, dynamic>> readConfig() async {
-    try {
-      final file = await _localFile;
-
-      // Read the file
-      final contents = await file.readAsString();
-      return jsonDecode(contents);
-    } catch (e) {
-      // If encountering an error, return map
-      return Map<String, dynamic>();
-    }
-  }
-
-  Future<File> writeConfig(Map<String, dynamic> input) async {
-    final file = await _localFile;
-
-    // Write the file
-    return file.writeAsString(jsonEncode(input));
-  }
-}
+import 'config.dart';
 
 class SettingPage extends StatelessWidget {
 
@@ -73,6 +37,7 @@ class SettingPage extends StatelessWidget {
   // [조회]
   // https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty
   // svcNo: /o7YzZ/LALiqpWEsEsXVzw==
+  // svcNo: K0QUhaLUsm+7o1UY+aWQBQ==
 
   @override
   Widget build(BuildContext context) {
@@ -163,6 +128,7 @@ class SettingPage extends StatelessWidget {
                       content: Text("설정이 저장되었습니다."),
                       duration: Duration(seconds: 3),
                     ));
+                    print("저장된 값:1");
                     //print("저장된 값:$input");         // 입력값 확인
                     _config.writeConfig(input);
                   },
