@@ -11,10 +11,12 @@ class dataAccess {
 
   String setLogin(){
     //_curl.get("https://www.snowman.co.kr/portal/login/process").then((value) {
-    _curl.post("https://www.snowman.co.kr/portal/login/process",{'1':'2'}).then((value) {
-      body=value.body;
-      print("body 값:$body"); 
-      print("responseData 값:${_curl.responseData}"); 
+    var data = { 'loginId' : 'goorm80', 'loginPwd' : 'Kf80sdh123' };
+    
+    _curl.post("http://dev4.tsherpamall.co.kr/sdhtest/apiTest",data).then((value) {
+    //_curl.post("https://www.snowman.co.kr/portal/login/process",data).then((value) {
+      print("responseHeader 값:${_curl.responseData.headers}");
+      //body=getList();
     });
 
     /*var url = Uri.https('www.snowman.co.kr', 'portal/login/process');
@@ -37,4 +39,11 @@ class dataAccess {
     });*/
     return "121";
   }
+
+  String getList(){
+    _curl.get("https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty").then((value) {
+      print("responseBody 값:${_curl.responseData.headers}"); 
+    });
+    return "getLists";
+  }  
 }

@@ -14,6 +14,7 @@ class httpCurl {
   Future<String> post(String url, dynamic data) async {
     var uri=Uri.parse(url);
     http.Response response = await http.post(uri, body: data, headers: headers);
+    print('Response status: ${response.statusCode}');
     updateCookie(response);
     this.responseData=response;
     return response.body;
