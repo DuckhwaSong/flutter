@@ -2,12 +2,18 @@ import 'package:http/http.dart' as http;
 
 class httpCurl {
   Map<String, String> headers = {
-    //'Content-Type': 'application/json',
-    'User-Agent': 'swonmanApp',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept': '*/*',
     'Accept-Encoding': 'gzip, deflate, br',
-    'Connection': 'keep-alive'
-  };
+    'Connection': 'keep-alive',
+    'Accept-Language': 'ko-KR,ko;q=0.9',
+    'Cache-Control': 'max-age=0',
+    'Content-Length': '35',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Host': 'www.snowman.co.kr',
+    'Origin': 'https://www.snowman.co.kr',
+    'Referer': 'https: //www.snowman.co.kr/portal/login'
+    };
   var responseData;
 
   Future<String> get(String url) async {

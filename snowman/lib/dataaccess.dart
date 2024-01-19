@@ -38,10 +38,58 @@ class dataAccess {
     return "getPageCall";
   }
 
+  void postData() async {
+    _idController.text = input['id'];
+    _pwController.text = this.decTools(input['pwEnc']); // 비밀번호는 복호화
+    _noController.text = input['no'];
+
+    var url = 'https://www.snowman.co.kr/portal/login/process';
+    var headers = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': '*/*',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'Connection': 'keep-alive',
+      'Accept-Language': 'ko-KR,ko;q=0.9',
+      'Cache-Control': 'max-age=0',
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Host': 'www.snowman.co.kr',
+      'Origin': 'https://www.snowman.co.kr',
+      'Referer': 'https: //www.snowman.co.kr/portal/login'
+    };
+    var body = { 'loginId' : _idController.text, 'loginPwd' : _pwController.text };
+
+    var response = await http.post(Uri.parse(url), headers: headers, body: body);
+
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    String? rawCookie = response.headers['set-cookie'];
+    if (rawCookie != null) {
+      int index = rawCookie.indexOf(';');
+      headers['cookie'] =
+          (index == -1) ? rawCookie : rawCookie.substring(0, index);
+    }
+    String tmpCookie = headers['cookie'].toString();
+    if(!tmpCookie.contains("popupDispYn")) headers['cookie'] = "${headers['cookie']};popupDispYn=N;";
+    print("rawCookie 값:${headers['cookie']}");  
+    print("response headers 값:${response.headers}");  
+    
+    var response2 = await http.get(Uri.parse('https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty'), headers: headers);
+
+    print('Response status: ${response2.statusCode}');
+
+    if(response2.body.contains("잔여량")) print("로그인 : 성공!");
+    if(!response2.body.contains("잔여량")) print("로그인실패!");
+  }
+
   void getUseData(){
     String url = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
     _curl.get(url).then((bodyData){
-      //print("get 저장된 값:${bodyData}");      
+      //print("get 저장된 값:${bodyData}");
+      if(bodyData.contains("잔여량")){
+        print("get 저장된 값:${bodyData}");
+      }
+      else print("로그인실패!");
     });
   }
 
@@ -57,7 +105,7 @@ class dataAccess {
       //String url = "http://localhost:21098/?id=1&pw=2";
       String url = "https://www.snowman.co.kr/portal/login/process";
       _curl.post(url,data).then((value) {
-        print("로그인처리");
+        print("로그인처리 시도");
         print("responseHeader 값:${_curl.responseData.headers}");
         //print("responseBody 값:${_curl.responseData.body}");
         if(_curl.responseData.statusCode == 302){
@@ -69,11 +117,13 @@ class dataAccess {
   }
 
   String setLogin(){
-    String url = "https://www.snowman.co.kr/portal/login";
-    getPageCall(url).then((value) {
+    postData();
+    //String url = "https://www.snowman.co.kr/portal/login";
+    /*getPageCall(url).then((value) {
       //print("responseBody 값:${_curl.responseData.body}");
       processLogin();
-    });
+    });*/
+    //processLogin();
     return "1";
 
      
