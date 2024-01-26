@@ -8,26 +8,24 @@ class httpCurl {
     'Connection': 'keep-alive',
     'Accept-Language': 'ko-KR,ko;q=0.9',
     'Cache-Control': 'max-age=0',
-    'Content-Length': '35',
     'Content-Type': 'application/x-www-form-urlencoded',
-    'Host': 'www.snowman.co.kr',
-    'Origin': 'https://www.snowman.co.kr',
-    'Referer': 'https: //www.snowman.co.kr/portal/login'
     };
   var responseData;
 
   Future<String> get(String url) async {
     var uri=Uri.parse(url);
+    //print("cookie 값:${headers}");
     http.Response response = await http.get(uri, headers: headers);
+    //print('Response status: ${response.statusCode}');
     updateCookie(response);
     return response.body;
   }
 
   Future<String> post(String url, dynamic data) async {
     var uri=Uri.parse(url);
-    print("cookie 값:${headers['cookie']}");
+    //print("cookie 값:${headers['cookie']}");
     http.Response response = await http.post(uri, body: data, headers: headers);
-    print('Response status: ${response.statusCode}');
+    //print('Response status: ${response.statusCode}');
     updateCookie(response);
     this.responseData=response;
     return response.body;
@@ -43,7 +41,7 @@ class httpCurl {
     }
     String tmpCookie = headers['cookie'].toString();
     if(!tmpCookie.contains("popupDispYn")) headers['cookie'] = "${headers['cookie']};popupDispYn=N;";
-    print("rawCookie 값:${headers['cookie']}");
+    //print("rawCookie 값:${headers['cookie']}");
     //print("headers 값:${headers}");
   }
 }
