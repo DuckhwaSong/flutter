@@ -28,7 +28,6 @@ class SettingPage extends StatelessWidget {
   }
   // [로그인]
   // https://www.snowman.co.kr/portal/login/process
-  // goorm80/Kf80sdh123
   
   // [조회]
   // https://www.snowman.co.kr/portal/mysnowman/myInfo/submain

@@ -36,16 +36,21 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  double _currentSliderPrimaryValue = 0.2;
+  double _currentSliderPrimaryValue = 0.1;
   double _currentSliderSecondaryValue = 0.5;
   
   dataAccess _dtAcc = new dataAccess();
 
   @override
   Widget build(BuildContext context) {
-    var input = _dtAcc.setLogin();
-    print("저장된 값:$input"); 
-
+    //var input = _dtAcc.setLogin();
+    //print("저장된 값:$input"); 
+    _dtAcc.testCall(() {
+      _currentSliderPrimaryValue = 0;
+    });
+    _dtAcc.testCall2((str) {
+      print("testCall2 값:$str"); 
+    });
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,

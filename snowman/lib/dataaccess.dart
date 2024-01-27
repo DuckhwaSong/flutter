@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:encrypt/encrypt.dart' as enc;
 import 'config.dart';
+import 'package:html/parser.dart' as parser;    // html 파싱을 위해
 
 
 class dataAccess {
@@ -29,9 +30,10 @@ class dataAccess {
     return encrypter.decrypt64(encString,iv: enc.IV.fromUtf8(this.encIV));
   }
 
-  httpCurl _curl = new httpCurl();
-  //String body='';
+  var useData={};
 
+  httpCurl _curl = new httpCurl();
+  //String body=''; 
   // 로그인 후 데이터 확인
   void getUseData(){
     String url = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
@@ -40,7 +42,38 @@ class dataAccess {
       //print("get 저장된 값:${bodyData}");
       if(bodyData.contains("잔여량")){
         //print("get 저장된 값:${bodyData}");
-        print("로그인성공!");
+        //print("로그인성공!");
+
+        var document = parser.parse(bodyData);
+        var svcNo = document.querySelectorAll('#svcNo')[0];
+        //print("텍스트만 추출 : ${svcNo?.text}");         // 텍스트만 추출  
+        //print("innerHtml 반환 : ${svcNo?.innerHtml}");  // html 반환 child만
+        //print("outerHtml 반환 : ${svcNo?.outerHtml}");  // html 반환 self 포함
+        var options = svcNo.querySelectorAll('option');
+        //print(options);
+        int i=0;
+        for(var option in options){
+          print("outerHtml 반환 : ${option?.outerHtml}");
+          useData['key'+i.toString()] = option?.attributes['value'];
+          useData['val'+i.toString()] = option?.innerHtml;
+          i++;
+        }
+        
+        var realtimeContent = document.querySelectorAll('.real-time-box');
+        i=0;
+        for(var realtime in realtimeContent){
+          //print(realtime.text);
+          var progressLists = realtime.querySelectorAll('.progress-list > .data');
+          for(var progressList in progressLists){
+            useData['data'+i.toString()] = progressList.innerHtml.replaceAll(RegExp('\\s'), "");  // 문자열 공백을 제거한다.
+            //useData['data'][i.toString()] = progressList.innerHtml.replaceAll(RegExp('\\s'), "");
+            i++;
+          }
+        }
+        
+
+        useData['result'] = "로그인성공";
+        print("get 저장된 값:${useData}");
       }
       else print("로그인실패!");
     });
@@ -83,5 +116,15 @@ class dataAccess {
       print("responseBody 값:${_curl.responseData.headers}"); 
     });
     return "getLists";
-  }  
+  }
+
+  void testCall(VoidCallback callback){
+    callback.call();
+  }
+  void testCall2(StringCallback callback){
+    String str = 'str';
+    callback(str);
+  }
 }
+typedef StringCallback = void Function(String);
+
