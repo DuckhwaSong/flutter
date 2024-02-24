@@ -31,6 +31,16 @@ class httpCurl {
     return response.body;
   }
 
+  /*Future<String> postRt(String url, dynamic data) async {
+    var uri=Uri.parse(url);
+    //print("cookie 값:${headers['cookie']}");
+    http.Response response = await http.post(uri, body: data, headers: headers);
+    //print('Response status: ${response.statusCode}');
+    updateCookie(response);
+    this.responseData=response;
+    return response.body;
+  }*/
+
   void updateCookie(http.Response response) {
     //print("headers 값:${headers}");
     String? rawCookie = response.headers['set-cookie'];

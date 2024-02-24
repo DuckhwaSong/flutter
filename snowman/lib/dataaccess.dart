@@ -29,36 +29,46 @@ class dataAccess {
     final encrypter=enc.Encrypter(enc.AES(enc.Key.fromUtf8(this.encKey)));
     return encrypter.decrypt64(encString,iv: enc.IV.fromUtf8(this.encIV));
   }
+  String keyStr = "";   // 조회키
 
   var useData={};
 
   httpCurl _curl = new httpCurl();
   //String body=''; 
   // 로그인 후 데이터 확인
-  void getUseData(){
+  Future<void> getUseData() async{
     String url = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
-    print("데이터 불러오기!");    
-    _curl.get(url).then((bodyData){
-      //print("get 저장된 값:${bodyData}");
-      if(bodyData.contains("잔여량")){
-        //print("get 저장된 값:${bodyData}");
-        //print("로그인성공!");
-
-        var document = parser.parse(bodyData);
-        var svcNo = document.querySelectorAll('#svcNo')[0];
-        //print("텍스트만 추출 : ${svcNo?.text}");         // 텍스트만 추출  
-        //print("innerHtml 반환 : ${svcNo?.innerHtml}");  // html 반환 child만
-        //print("outerHtml 반환 : ${svcNo?.outerHtml}");  // html 반환 self 포함
-        var options = svcNo.querySelectorAll('option');
-        //print(options);
-        int i=0;
+    print("데이터 불러오기!");  
+    //var bodyData = await _curl.get(url);    
+    if(keyStr == "") {
+      String bodyData = await _curl.get(url);
+      await parseUseData(bodyData);
+    } 
+    else 
+    {
+      String bodyData = await _curl.post(url,{'svcNo': keyStr});
+      await parseUseData(bodyData);
+    }
+  }
+  Future<void>  parseUseData(String bodyData) async{
+    if(bodyData.contains("잔여량")){
+      var document = parser.parse(bodyData);
+      var svcNo = document.querySelectorAll('#svcNo')[0];
+      var options = svcNo.querySelectorAll('option');
+      int i=0;
+      if(keyStr == ""){   // 조회키가 없는 경우
+        String regPhoneNo = _noController.text.substring(0,5) + "***" + _noController.text.substring(8);
         for(var option in options){
           print("outerHtml 반환 : ${option?.outerHtml}");
           useData['key'+i.toString()] = option?.attributes['value'];
           useData['val'+i.toString()] = option?.innerHtml;
-          i++;
+          if(regPhoneNo == useData['val'+i.toString()].toString().substring(0,13).replaceAll('-','')) keyStr=useData['key'+i.toString()].toString();
+          i++;            
         }
-        
+        print("전화번호 keyStr : ${keyStr}");
+        await getUseData();
+      }
+      else {    // 조회키로 조회된 값 처리!
         var realtimeContent = document.querySelectorAll('.real-time-box');
         i=0;
         for(var realtime in realtimeContent){
@@ -70,47 +80,36 @@ class dataAccess {
             i++;
           }
         }
-        
-
         useData['result'] = "로그인성공";
         print("get 저장된 값:${useData}");
-      }
-      else print("로그인실패!");
-    });
+      }      
+    }
+    else print("로그인실패!");
   }
 
   // 로그인 처리
-  void processLogin(){
-    _config.readConfig().then((value) {
-      input = value;
-      _idController.text = input['id'];
-      _pwController.text = this.decTools(input['pwEnc']); // 비밀번호는 복호화
-      _noController.text = input['no'];
-      _curl.headers['Referer'] = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
-      var data = { 'loginId' : _idController.text, 'loginPwd' : _pwController.text };
+  Future<void> processLogin() async{
+    var input = await _config.readConfig();
+    _idController.text = input['id'];
+    _pwController.text = this.decTools(input['pwEnc']); // 비밀번호는 복호화
+    _noController.text = input['no'];
+    _curl.headers['Referer'] = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
+    var data = { 'loginId' : _idController.text, 'loginPwd' : _pwController.text };
+    String url = "https://www.snowman.co.kr/portal/login/process";
+    String responseBody =  await _curl.post(url,data);
+    if(_curl.responseData.statusCode == 302){
+        //print("responsestatusCode 값:${_curl.responseData.statusCode}");
+        await getUseData();   // 데이터 불러오기
+    }
+  }  
 
-      print("저장된 값:${data}");
 
-      //String url = "http://localhost:21098/?id=1&pw=2";
-      String url = "https://www.snowman.co.kr/portal/login/process";
-      //String url = 'http://localhost:8880/test.php';
-      _curl.post(url,data).then((value) {
-        print("로그인처리 시도");
-        print("responseHeader 값:${_curl.responseData.headers}");
-        //print("responseBody 값:${_curl.responseData.body}");
-        if(_curl.responseData.statusCode == 302){
-          print("responsestatusCode 값:${_curl.responseData.statusCode}");
-          getUseData();   // 데이터 불러오기
-        }
-      });
-    });
+  Future<Object> setLogin() async{
+    await processLogin();
+    return useData;
   }
 
-  String setLogin(){
-    processLogin();
-    return "1";
-  }
-
+  /*
   String getList(){
     _curl.get("https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty").then((value) {
       print("responseBody 값:${_curl.responseData.headers}"); 
@@ -125,6 +124,13 @@ class dataAccess {
     String str = 'str';
     callback(str);
   }
+  void testCall3(ObjectCallback callback){
+    var str = {};
+    str[0] = 0;
+    str[1] = 1;
+    callback(str);
+  }*/
 }
-typedef StringCallback = void Function(String);
+//typedef StringCallback = void Function(String);
+//typedef ObjectCallback = void Function(Object);
 

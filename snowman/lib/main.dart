@@ -39,17 +39,14 @@ class _MyHomePageState extends State<MyHomePage> {
   double _currentSliderPrimaryValue = 0.1;
   double _currentSliderSecondaryValue = 0.5;
   
+  var responseData={};
+
   dataAccess _dtAcc = new dataAccess();
 
   @override
   Widget build(BuildContext context) {
-    //var input = _dtAcc.setLogin();
-    //print("저장된 값:$input"); 
-    _dtAcc.testCall(() {
-      _currentSliderPrimaryValue = 0;
-    });
-    _dtAcc.testCall2((str) {
-      print("testCall2 값:$str"); 
+    _dtAcc.setLogin().then((responseData) {
+      print("setLogin 값:${responseData}"); 
     });
     return Scaffold(
       appBar: AppBar(
