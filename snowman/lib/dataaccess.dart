@@ -31,7 +31,7 @@ class dataAccess {
   }
   String keyStr = "";   // 조회키
 
-  var useData={};
+  Map<String, dynamic> useData={};
 
   httpCurl _curl = new httpCurl();
   //String body=''; 
@@ -81,7 +81,7 @@ class dataAccess {
           }
         }
         useData['result'] = "로그인성공";
-        print("get 저장된 값:${useData}");
+        //print("get 저장된 값:${useData}");
       }      
     }
     else print("로그인실패!");
@@ -95,6 +95,7 @@ class dataAccess {
     _noController.text = input['no'];
     _curl.headers['Referer'] = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
     var data = { 'loginId' : _idController.text, 'loginPwd' : _pwController.text };
+    //print("data 값:${data}");
     String url = "https://www.snowman.co.kr/portal/login/process";
     String responseBody =  await _curl.post(url,data);
     if(_curl.responseData.statusCode == 302){
@@ -104,7 +105,7 @@ class dataAccess {
   }  
 
 
-  Future<Object> setLogin() async{
+  Future<Map<String, dynamic>> setLogin() async{
     await processLogin();
     return useData;
   }
