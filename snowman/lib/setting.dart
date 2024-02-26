@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:encrypt/encrypt.dart' as enc;
+import 'package:snowman/main.dart';
+import 'dataaccess.dart';
 
 import 'config.dart';
 
@@ -14,29 +16,7 @@ class SettingPage extends StatelessWidget {
   final TextEditingController _noController = TextEditingController();
 
   Map<String, dynamic> input = Map<String, dynamic>();
-
-  // 암복호화 툴
-  String encKey = 'SNOWMAN79SNOWMAN';
-  String encIV = '1A23B456C7890DFE';  
-  String encTools(String text){
-    final encrypter=enc.Encrypter(enc.AES(enc.Key.fromUtf8(this.encKey)));
-    return encrypter.encrypt(text,iv: enc.IV.fromUtf8(this.encIV)).base64;
-  }  
-  String decTools(String encString){
-    final encrypter=enc.Encrypter(enc.AES(enc.Key.fromUtf8(this.encKey)));
-    return encrypter.decrypt64(encString,iv: enc.IV.fromUtf8(this.encIV));
-  }
-  // [로그인]
-  // https://www.snowman.co.kr/portal/login/process
-  
-  // [조회]
-  // https://www.snowman.co.kr/portal/mysnowman/myInfo/submain
-  // svcNo: K0QUhaLUsm+7o1UY+aWQBQ==
-
-  // [조회]
-  // https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty
-  // svcNo: /o7YzZ/LALiqpWEsEsXVzw==
-  // svcNo: K0QUhaLUsm+7o1UY+aWQBQ==
+  dataAccess _dtAcc = new dataAccess();
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +26,32 @@ class SettingPage extends StatelessWidget {
       //print("저장된 값:$input");
       _idController.text = input['id'];
       //_pwController.text = input['pw'];
-      _pwController.text = this.decTools(input['pwEnc']); // 비밀번호는 복호화
+      _pwController.text = _config.decTools(input['pwEnc']); // 비밀번호는 복호화      
       _noController.text = input['no'];
     }); 
 
     return ScaffoldMessenger(
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: (){
+            //Navigator.pop(context);
+            //Navigator.of(context).pop('result');
+            //Navigator.pop(context,MaterialPageRoute(builder: (context) => MyApp()));
+            print("리프레쉬가 되어야함:1");
+            _dtAcc.setLogin().then((responseData) {
+              print("setLogin 값:${responseData}");
+
+              // 값이 없는 경우 설정으로 전환
+              if(responseData['result'].toString()!='로그인성공'){
+                print("tmp 값:${responseData['result']}");
+                Navigator.push(context, MaterialPageRoute(builder: (context) => SettingPage())); // 설정페이지로 이동
+              }
+              else {    //값이 있는 경우 값을 변수에 매칭
+
+              }
+              Navigator.pop(context,MaterialPageRoute(builder: (context) => MyApp()));
+            });
+          }),
           title: Text('설정'),
         ),
         body: Builder( // 빌더를 통해서 context를 받아야 해.
@@ -96,7 +95,7 @@ class SettingPage extends StatelessWidget {
                     ),
                     onChanged:(text){
                       //input['pw']=text;
-                      input['pwEnc']=this.encTools(text);  // 비밀번호는 암호화
+                      input['pwEnc']=_config.encTools(text);  // 비밀번호는 암호화                      
                     }
                   ),
                 ),  

@@ -18,17 +18,6 @@ class dataAccess {
 
   Map<String, dynamic> input = Map<String, dynamic>();
 
-  // 암복호화 툴
-  String encKey = 'SNOWMAN79SNOWMAN';
-  String encIV = '1A23B456C7890DFE';  
-  String encTools(String text){
-    final encrypter=enc.Encrypter(enc.AES(enc.Key.fromUtf8(this.encKey)));
-    return encrypter.encrypt(text,iv: enc.IV.fromUtf8(this.encIV)).base64;
-  }  
-  String decTools(String encString){
-    final encrypter=enc.Encrypter(enc.AES(enc.Key.fromUtf8(this.encKey)));
-    return encrypter.decrypt64(encString,iv: enc.IV.fromUtf8(this.encIV));
-  }
   String keyStr = "";   // 조회키
 
   Map<String, dynamic> useData={};
@@ -91,11 +80,11 @@ class dataAccess {
   Future<void> processLogin() async{
     var input = await _config.readConfig();
     _idController.text = input['id'];
-    _pwController.text = this.decTools(input['pwEnc']); // 비밀번호는 복호화
+    _pwController.text = _config.decTools(input['pwEnc']); // 비밀번호는 복호화
     _noController.text = input['no'];
     _curl.headers['Referer'] = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
     var data = { 'loginId' : _idController.text, 'loginPwd' : _pwController.text };
-    //print("data 값:${data}");
+    print("data 값:${data}");
     String url = "https://www.snowman.co.kr/portal/login/process";
     String responseBody =  await _curl.post(url,data);
     if(_curl.responseData.statusCode == 302){

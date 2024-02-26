@@ -41,6 +41,11 @@ class _MyHomePageState extends State<MyHomePage> {
   double _currentSliderSecondaryValue = 0.5;
   
   var responseData={};
+  var userData={
+    "data_total":0.8,"data_remain":0,"data_use":0,
+    "call_total":100,"call_remain":0,"call_use":0,
+    "msg_total":100,"msg_remain":0,"msg_use":0
+  };
 
   dataAccess _dtAcc = new dataAccess();
 
@@ -56,7 +61,19 @@ class _MyHomePageState extends State<MyHomePage> {
         Navigator.push(context, MaterialPageRoute(builder: (context) => SettingPage())); // 설정페이지로 이동
       }
       else {    //값이 있는 경우 값을 변수에 매칭
-
+        //String tmp = responseData['data0'].replaceAll(RegExp(r'[^\d\.]'), "");  // 숫자만 추출
+        //print("tmp 값:${tmp}");
+        userData['data_total'] = double.parse(responseData['data0'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['data_remain'] = double.parse(responseData['data1'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['data_use'] = double.parse(responseData['data2'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['call_total'] = double.parse(responseData['data3'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['call_remain'] = double.parse(responseData['data4'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['call_use'] = double.parse(responseData['data5'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['msg_total'] = double.parse(responseData['data6'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['msg_remain'] = double.parse(responseData['data7'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+        userData['msg_use'] = double.parse(responseData['data8'].replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출                
+        //userData['data_total'] = 11;
+        print("userData 값:${userData}");
       }
     });
     return Scaffold(
@@ -74,10 +91,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 animation: true,
                 animationDuration: 1000,
                 lineHeight: 20.0,
-                leading: new Text("용량"),
-                trailing: new Text("총 10GB"),
+                leading: new Text("데이터"),
+                trailing: new Text("${userData['data_total']} GB"),
                 percent: 0.2,
-                center: Text("2GB(20.0%) 남음"),
+                center: Text("${userData['data_remain']} GB 남음"),
                 barRadius: const Radius.circular(20.0),
                 progressColor: Colors.blue,
               ),
@@ -88,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 animation: true,
                 animationDuration: 1000,
                 lineHeight: 20.0,
-                leading: new Text("용량"),
+                leading: new Text("통화"),
                 trailing: new Text("총 10GB"),
                 percent: 0.2,
                 center: Text("2GB(20.0%) 남음"),
@@ -102,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 animation: true,
                 animationDuration: 1000,
                 lineHeight: 20.0,
-                leading: new Text("용량"),
+                leading: new Text("문자"),
                 trailing: new Text("총 10GB"),
                 percent: 0.2,
                 center: Text("2GB(20.0%) 남음"),
