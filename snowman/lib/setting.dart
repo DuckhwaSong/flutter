@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:encrypt/encrypt.dart' as enc;
 import 'package:snowman/main.dart';
 import 'dataaccess.dart';
+import 'main.dart';
 
 import 'config.dart';
 
@@ -38,8 +39,12 @@ class SettingPage extends StatelessWidget {
             //Navigator.of(context).pop('result');
             //Navigator.pop(context,MaterialPageRoute(builder: (context) => MyApp()));
             print("리프레쉬가 되어야함:1");
+            _dtAcc.setRefresh=true;
+            Navigator.pop(context);
+            Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp())); // MyApp 페이지로 이동 >> 문제 핫리로드시 MyApp 중복호출됨!!
+            /*
             _dtAcc.setLogin().then((responseData) {
-              print("setLogin 값:${responseData}");
+              print("setLogin2 값:${responseData}");
 
               // 값이 없는 경우 설정으로 전환
               if(responseData['result'].toString()!='로그인성공'){
@@ -47,10 +52,10 @@ class SettingPage extends StatelessWidget {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => SettingPage())); // 설정페이지로 이동
               }
               else {    //값이 있는 경우 값을 변수에 매칭
-
+                Map<String, double> userData =  _dtAcc.dataRefresh(responseData);
               }
               Navigator.pop(context,MaterialPageRoute(builder: (context) => MyApp()));
-            });
+            });*/
           }),
           title: Text('설정'),
         ),

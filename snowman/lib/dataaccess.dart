@@ -7,6 +7,7 @@ import 'package:html/parser.dart' as parser;    // html 파싱을 위해
 
 
 class dataAccess {
+  bool setRefresh=false;
 
   // 설정 변수
   ConfigStorage _config = new ConfigStorage();
@@ -95,8 +96,29 @@ class dataAccess {
 
 
   Future<Map<String, dynamic>> setLogin() async{
+    keyStr = "";
     await processLogin();
     return useData;
+  }
+
+  Map<String, double> dataRefresh(Map<String, dynamic> responseData){
+    Map<String, double> userData={};
+    userData['data_total'] = double.parse(responseData['data0'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['data_use'] = double.parse(responseData['data1'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['data_remain'] = double.parse(responseData['data2'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['data_per'] =  ((userData['data_remain']??0.0)/(userData['data_total']??0.0)*100).roundToDouble()/100;
+    userData['call_total'] = double.parse(responseData['data3'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['call_use'] = double.parse(responseData['data4'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['call_remain'] = double.parse(responseData['data5'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['call_per'] =  ((userData['call_remain']??0.0)/(userData['call_total']??0.0)*100).roundToDouble()/100;
+    userData['msg_total'] = double.parse(responseData['data6'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['msg_use'] = double.parse(responseData['data7'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
+    userData['msg_remain'] = double.parse(responseData['data8'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출                
+    userData['msg_per'] =  ((userData['msg_remain']??0.0)/(userData['msg_total']??0.0)*100).roundToDouble()/100;
+    userData['data_per'] = 0.1;
+    userData['call_per'] = 0.2;
+    userData['msg_per'] = 0.3;
+    return userData;
   }
 
   /*
