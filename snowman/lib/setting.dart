@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:encrypt/encrypt.dart' as enc;
-import 'package:snowman/main.dart';
+//import 'package:encrypt/encrypt.dart' as enc;
+//import 'package:snowman/main.dart';
 import 'dataaccess.dart';
-import 'main.dart';
+//import 'main.dart';
 
 import 'config.dart';
 
@@ -35,27 +35,9 @@ class SettingPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(icon: Icon(Icons.arrow_back_ios), onPressed: (){
-            //Navigator.pop(context);
-            //Navigator.of(context).pop('result');
-            //Navigator.pop(context,MaterialPageRoute(builder: (context) => MyApp()));
             print("리프레쉬가 되어야함:1");
             _dtAcc.setRefresh=true;
-            Navigator.pop(context);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => MyApp())); // MyApp 페이지로 이동 >> 문제 핫리로드시 MyApp 중복호출됨!!
-            /*
-            _dtAcc.setLogin().then((responseData) {
-              print("setLogin2 값:${responseData}");
-
-              // 값이 없는 경우 설정으로 전환
-              if(responseData['result'].toString()!='로그인성공'){
-                print("tmp 값:${responseData['result']}");
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SettingPage())); // 설정페이지로 이동
-              }
-              else {    //값이 있는 경우 값을 변수에 매칭
-                Map<String, double> userData =  _dtAcc.dataRefresh(responseData);
-              }
-              Navigator.pop(context,MaterialPageRoute(builder: (context) => MyApp()));
-            });*/
+            Navigator.pop(context);             // 메인으로 되돌아간다
           }),
           title: Text('설정'),
         ),
@@ -131,9 +113,12 @@ class SettingPage extends StatelessWidget {
                       content: Text("설정이 저장되었습니다."),
                       duration: Duration(seconds: 3),
                     ));
-                    print("저장된 값:1");
+                    //print("저장된 값:1");
                     //print("저장된 값:$input");         // 입력값 확인
                     _config.writeConfig(input);
+                    print("리프레쉬가 되어야함:2");
+                    _dtAcc.setRefresh=true;
+                    Navigator.pop(context);             // 메인으로 되돌아간다
                   },
                   child: Text('저장'),
                 ),

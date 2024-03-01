@@ -1,13 +1,13 @@
 import 'httpcurl.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:encrypt/encrypt.dart' as enc;
+//import 'package:http/http.dart' as http;
+//import 'package:encrypt/encrypt.dart' as enc;
 import 'config.dart';
 import 'package:html/parser.dart' as parser;    // html 파싱을 위해
 
 
 class dataAccess {
-  bool setRefresh=false;
+  bool setRefresh=true;
 
   // 설정 변수
   ConfigStorage _config = new ConfigStorage();
@@ -22,13 +22,18 @@ class dataAccess {
   String keyStr = "";   // 조회키
 
   Map<String, dynamic> useData={};
-
+  Map<String, double> userData={
+    "data_total":0.0,"data_use":0.0,"data_remain":0.0,"data_per":0.0,
+    "call_total":0.0,"call_use":0.0,"call_remain":0.0,"call_per":0.0,
+    "msg_total":0.0,"msg_use":0.0,"msg_remain":0.0,"msg_per":0.0
+    };
+    
   httpCurl _curl = new httpCurl();
   //String body=''; 
   // 로그인 후 데이터 확인
   Future<void> getUseData() async{
     String url = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
-    print("데이터 불러오기!");  
+    //print("데이터 불러오기!");  
     //var bodyData = await _curl.get(url);    
     if(keyStr == "") {
       String bodyData = await _curl.get(url);
@@ -49,13 +54,13 @@ class dataAccess {
       if(keyStr == ""){   // 조회키가 없는 경우
         String regPhoneNo = _noController.text.substring(0,5) + "***" + _noController.text.substring(8);
         for(var option in options){
-          print("outerHtml 반환 : ${option?.outerHtml}");
+          //print("outerHtml 반환 : ${option?.outerHtml}");
           useData['key'+i.toString()] = option?.attributes['value'];
           useData['val'+i.toString()] = option?.innerHtml;
           if(regPhoneNo == useData['val'+i.toString()].toString().substring(0,13).replaceAll('-','')) keyStr=useData['key'+i.toString()].toString();
           i++;            
         }
-        print("전화번호 keyStr : ${keyStr}");
+        //print("전화번호 keyStr : ${keyStr}");
         await getUseData();
       }
       else {    // 조회키로 조회된 값 처리!
@@ -85,7 +90,7 @@ class dataAccess {
     _noController.text = input['no'];
     _curl.headers['Referer'] = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
     var data = { 'loginId' : _idController.text, 'loginPwd' : _pwController.text };
-    print("data 값:${data}");
+    //print("data 값:${data}");
     String url = "https://www.snowman.co.kr/portal/login/process";
     String responseBody =  await _curl.post(url,data);
     if(_curl.responseData.statusCode == 302){
@@ -98,11 +103,11 @@ class dataAccess {
   Future<Map<String, dynamic>> setLogin() async{
     keyStr = "";
     await processLogin();
-    return useData;
+    return dataRefresh(useData);
   }
 
   Map<String, double> dataRefresh(Map<String, dynamic> responseData){
-    Map<String, double> userData={};
+    //Map<String, double> userData={};
     userData['data_total'] = double.parse(responseData['data0'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['data_use'] = double.parse(responseData['data1'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['data_remain'] = double.parse(responseData['data2'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
@@ -115,9 +120,6 @@ class dataAccess {
     userData['msg_use'] = double.parse(responseData['data7'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['msg_remain'] = double.parse(responseData['data8'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출                
     userData['msg_per'] =  ((userData['msg_remain']??0.0)/(userData['msg_total']??0.0)*100).roundToDouble()/100;
-    userData['data_per'] = 0.1;
-    userData['call_per'] = 0.2;
-    userData['msg_per'] = 0.3;
     return userData;
   }
 

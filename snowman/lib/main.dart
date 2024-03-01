@@ -49,26 +49,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     print("MyApp 호출!!");
 
-    if(_dtAcc.setRefresh){
+    /*if(_dtAcc.setRefresh){
       _dtAcc.setRefresh=false;
       print("리프레쉬가 되어야함:2");
-      setState((){});
-    }
-    _dtAcc.setLogin().then((responseData) {
-      print("setLogin 값:${responseData}");
-      //print("responseData type:${responseData.runtimeType}");
-
-      // 값이 없는 경우 설정으로 전환
-      if(responseData['result'].toString()!='로그인성공'){
-        print("tmp 값:${responseData['result']}");
-        Navigator.push(context, MaterialPageRoute(builder: (context) => SettingPage())); // 설정페이지로 이동
+      //setState((){});
+    }*/
+    _dtAcc.setLogin().then((responseData) {      
+      if(_dtAcc.setRefresh) {
+        setState((){});
+        _dtAcc.setRefresh=false;
       }
-      else {    //값이 있는 경우 값을 변수에 매칭
-        userData =  _dtAcc.dataRefresh(responseData);
-        print("userData['data_total'] type:${userData['data_total'].runtimeType}");
-        print("userData 값:${userData}");
-        print("_dtAcc.keyStr 값:${_dtAcc.keyStr}"); 
-      }
+      print("_dtAcc.userData 값1:${_dtAcc.userData}"); 
     });
     return Scaffold(
       appBar: AppBar(
@@ -86,9 +77,10 @@ class _MyHomePageState extends State<MyHomePage> {
                 animationDuration: 1000,
                 lineHeight: 20.0,
                 leading: new Text("데이터"),
-                trailing: new Text("${userData['data_total']} GB"),
-                percent: userData['data_per']??0.0,
-                center: Text("${userData['data_remain']} GB 남음"),
+                trailing: new Text("${_dtAcc.userData['data_total']} GB"),
+                //percent: _dtAcc.data_per??0.0,
+                percent: _dtAcc.userData['data_per']??0.0,
+                center: Text("${_dtAcc.userData['data_remain']} GB 남음"),
                 barRadius: const Radius.circular(20.0),
                 progressColor: Colors.blue,
               ),
@@ -100,9 +92,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 animationDuration: 1000,
                 lineHeight: 20.0,
                 leading: new Text("통화량"),
-                trailing: new Text("${userData['call_total']} 분"),
-                percent: userData['call_per']??0.0,
-                center: Text("${userData['call_remain']} 분 남음"),
+                trailing: new Text("${_dtAcc.userData['call_total']} 분"),
+                percent: _dtAcc.userData['call_per']??0.0,
+                center: Text("${_dtAcc.userData['call_remain']} 분 남음"),
                 barRadius: const Radius.circular(20.0),
                 progressColor: Colors.red,
               ),
@@ -114,9 +106,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 animationDuration: 1000,
                 lineHeight: 20.0,
                 leading: new Text("문자량"),
-                trailing: new Text("${userData['msg_total']} 건"),
-                percent: userData['msg_per']??0.0,
-                center: Text("${userData['msg_remain']} 건 남음"),
+                trailing: new Text("${_dtAcc.userData['msg_total']} 건"),
+                percent: _dtAcc.userData['msg_per']??0.0,
+                center: Text("${_dtAcc.userData['msg_remain']} 건 남음"),
                 barRadius: const Radius.circular(20.0),
                 //progressColor: Colors.green,
                 //progressColor: Colors.orange,
@@ -128,8 +120,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+            print("설정하기로 들아간다");
             Navigator.push(context, // 네비게이션 형식으로 push형식으로 전환
-                MaterialPageRoute(builder: (context) => SettingPage())); // 화면전환 코드
+                MaterialPageRoute(builder: (context) => SettingPage())).then((_){
+                  print("돌아왔을 때 화면을 리로드");
+                  //setState(() {});  // 돌아왔을 때 화면을 리로드
+                  _dtAcc.setLogin().then((responseData) {      
+                    setState((){});
+                    print("_dtAcc.userData 값2:${_dtAcc.userData}");
+                  });
+                }); // 화면전환 코드
           },
         tooltip: '설정하기',
         child: const Icon(Icons.settings),

@@ -35,6 +35,7 @@ dependencies:
   http:
   html:
   percent_indicator:
+  #flutter_native_splash:
   
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -56,11 +57,17 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  assets:
+    - asset/icons/
+
+  windows:
+  #  icon: "assets/icons/snowman_win.ico"  # 아이콘 이미지의 경로를 지정합니다.
+    
 
   # To add assets to your application, add an assets section, like this:
   # assets:
