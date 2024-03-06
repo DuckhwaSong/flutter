@@ -34,4 +34,10 @@ flutter pub get
 [windows 빌드]
  - 아이콘변경 : windows\runner\resources\app_icon.ico
  - exe빌드 : flutter build windows
- - 
+ - 빌드위치 : build\windows\runner\Release
+
+[안드로이드 빌드]
+ - 안드로이드 스튜디오를 켜져있는 상태로 빌드
+ - 아이콘변경 : windows\runner\resources\app_icon.ico
+ - apk빌드 : flutter build apk
+ - 빌드위치 : build\app\outputs\flutter-apk\app-release.apk
