@@ -29,3 +29,8 @@ lib/main.dart
 
 [pubspec.yaml 갱신]
 flutter pub get
+
+
+[windows 빌드]
+ - 아이콘 : 
+> flutter build windows
