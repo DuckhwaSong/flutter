@@ -32,5 +32,6 @@ flutter pub get
 
 
 [windows 빌드]
- - 아이콘 : 
-> flutter build windows
+ - 아이콘변경 : windows\runner\resources\app_icon.ico
+ - exe빌드 : flutter build windows
+ - 
