@@ -41,3 +41,10 @@ flutter pub get
  - 아이콘변경 : windows\runner\resources\app_icon.ico
  - apk빌드 : flutter build apk
  - 빌드위치 : build\app\outputs\flutter-apk\app-release.apk
+
+[블루스택 - ADB 사용법]
+1. 블루스택설치
+2. 설정>고급기능설정>ADB 활성화
+3. cmd > adb connect 127.0.0.1:5555
+4. 안드로이드 실행 > flutter run -d android > 실행가능 디바이스 안내
+5. flutter run -d 127.0.0.1:5555
