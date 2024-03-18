@@ -24,7 +24,8 @@ void callbackDispatcher() {
       ),
       HomeWidget.updateWidget(
         name: 'HomeWidgetExampleProvider',
-        iOSName: 'HomeWidgetExample',
+        androidName: 'HomeWidgetExampleProvider',
+        qualifiedAndroidName: 'com.example.app.HomeWidgetExampleProvider',
       ),
     ]).then((value) {
       return !value.contains(false);
