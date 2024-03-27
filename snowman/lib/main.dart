@@ -118,13 +118,94 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              print("새로고침 들아간다");
+              _dtAcc.setLogin().then((responseData) {      
+                //setState((){});
+                print("_dtAcc.userData 값2:${_dtAcc.userData}");
+              });
+            },
+            tooltip: '새로고침',
+            child: const Icon(Icons.replay),
+          ),
+          SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+          FloatingActionButton(
+            onPressed: () {
+            print("설정하기로 들아간다");
+            Navigator.push(context, // 네비게이션 형식으로 push형식으로 전환
+                MaterialPageRoute(builder: (context) => SettingPage())).then((_){
+                  print("돌아왔을 때 화면을 리로드");
+                  setState(() {});  // 돌아왔을 때 화면을 리로드
+                  _dtAcc.setLogin().then((responseData) {      
+                    setState((){});
+                    print("_dtAcc.userData 값2:${_dtAcc.userData}");
+                  });
+                }); // 화면전환 코드
+            },
+            tooltip: '설정하기',
+            child: const Icon(Icons.settings),
+          ),
+          /*SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+          FloatingActionButton(
+            onPressed: () {},
+            backgroundColor: Colors.blue,
+            child: const Text('5')
+          ),
+          SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+          FloatingActionButton(
+            onPressed: () {},
+            backgroundColor: Colors.pink,
+            child: const Icon(Icons.remove)
+          ),*/
+        ],
+      ),
+
+      /*floatingActionButton: Stack(
+        children: <Widget>[
+          Align(
+            alignment: Alignment(Alignment.bottomRight.x,Alignment.bottomRight.y-0.2),
+              child:FloatingActionButton(
+                onPressed: () {
+                  print("설정하기로 들아간다");
+                  Navigator.push(context, // 네비게이션 형식으로 push형식으로 전환
+                      MaterialPageRoute(builder: (context) => SettingPage())).then((_){
+                        print("돌아왔을 때 화면을 리로드");
+                        setState(() {});  // 돌아왔을 때 화면을 리로드
+                        _dtAcc.setLogin().then((responseData) {      
+                          setState((){});
+                          print("_dtAcc.userData 값2:${_dtAcc.userData}");
+                        });
+                      }); // 화면전환 코드
+                },
+                tooltip: '설정하기',
+                child: const Icon(Icons.settings),
+              ),
+            ),
+          Align(
+            alignment: Alignment.bottomRight,
+            child:FloatingActionButton(
+              onPressed: () {
+                print("설정하기로 들아간다");
+              },
+              tooltip: '설정하기',
+              child: const Icon(Icons.add),
+            ),
+          ),  
+        ]
+      ),*/
+
+
+      /* floatingActionButton: FloatingActionButton(
         onPressed: () {
             print("설정하기로 들아간다");
             Navigator.push(context, // 네비게이션 형식으로 push형식으로 전환
                 MaterialPageRoute(builder: (context) => SettingPage())).then((_){
                   print("돌아왔을 때 화면을 리로드");
-                  //setState(() {});  // 돌아왔을 때 화면을 리로드
+                  setState(() {});  // 돌아왔을 때 화면을 리로드
                   _dtAcc.setLogin().then((responseData) {      
                     setState((){});
                     print("_dtAcc.userData 값2:${_dtAcc.userData}");
@@ -133,7 +214,7 @@ class _MyHomePageState extends State<MyHomePage> {
           },
         tooltip: '설정하기',
         child: const Icon(Icons.settings),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ), */ // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }

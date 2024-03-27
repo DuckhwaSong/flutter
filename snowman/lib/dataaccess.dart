@@ -90,8 +90,9 @@ class dataAccess {
     _noController.text = input['no'];
     _curl.headers['Referer'] = "https://www.snowman.co.kr/portal/mysnowman/useQntyRetv/rtimeUseQnty";
     var data = { 'loginId' : _idController.text, 'loginPwd' : _pwController.text };
-    //print("data 값:${data}");
     String url = "https://www.snowman.co.kr/portal/login/process";
+    //print("url 값:${url}");
+    //print("data 값:${data}");
     String responseBody =  await _curl.post(url,data);
     if(_curl.responseData.statusCode == 302){
         //print("responsestatusCode 값:${_curl.responseData.statusCode}");
