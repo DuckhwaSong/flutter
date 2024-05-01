@@ -39,6 +39,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   double _currentSliderPrimaryValue = 0.1;
   double _currentSliderSecondaryValue = 0.5;
+  String _consoleLog="";
   
   var responseData={};
   Map<String, double> userData={};
@@ -69,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[    
+          children: <Widget>[       
             Padding(
               padding: EdgeInsets.all(20.0),
               child: new LinearPercentIndicator(
@@ -114,7 +115,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 //progressColor: Colors.orange,
                 progressColor: Colors.greenAccent,
               ),
-            ),            
+            ), 
+            Padding(
+              padding: EdgeInsets.all(30.0),
+              child: Text("${_consoleLog}"),
+            ),                        
           ],
         ),
       ),
@@ -124,9 +129,20 @@ class _MyHomePageState extends State<MyHomePage> {
           FloatingActionButton(
             onPressed: () {
               print("새로고침 들아간다");
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar( // 스캐폴드 메신저가 스낵바 들고 있음!!
+                // 이렇게 하면 화면을 빠져나가서 context가 사라지면 스낵바가 사라져서 UI개선
+                content: Text("새로고침을 합니다."),
+                duration: Duration(seconds: 3),
+              ));
               _dtAcc.setLogin().then((responseData) {      
                 //setState((){});
                 print("_dtAcc.userData 값2:${_dtAcc.userData}");
+                _consoleLog="_dtAcc.userData 값2:${_dtAcc.userData}";
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar( // 스캐폴드 메신저가 스낵바 들고 있음!!
+                  // 이렇게 하면 화면을 빠져나가서 context가 사라지면 스낵바가 사라져서 UI개선
+                  content: Text("_dtAcc.userData 값2:${_dtAcc.userData}"),
+                  duration: Duration(seconds: 3),
+                ));
               });
             },
             tooltip: '새로고침',
@@ -135,14 +151,20 @@ class _MyHomePageState extends State<MyHomePage> {
           SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
           FloatingActionButton(
             onPressed: () {
-            print("설정하기로 들아간다");
-            Navigator.push(context, // 네비게이션 형식으로 push형식으로 전환
+              print("설정하기로 들아간다");
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar( // 스캐폴드 메신저가 스낵바 들고 있음!!
+                // 이렇게 하면 화면을 빠져나가서 context가 사라지면 스낵바가 사라져서 UI개선
+                content: Text("설정 페이지로 전환 됩니다."),
+                duration: Duration(seconds: 3),
+              ));
+              Navigator.push(context, // 네비게이션 형식으로 push형식으로 전환
                 MaterialPageRoute(builder: (context) => SettingPage())).then((_){
                   print("돌아왔을 때 화면을 리로드");
                   setState(() {});  // 돌아왔을 때 화면을 리로드
                   _dtAcc.setLogin().then((responseData) {      
                     setState((){});
-                    print("_dtAcc.userData 값2:${_dtAcc.userData}");
+                    _consoleLog="_dtAcc.userData 값3:${_dtAcc.userData}";
+                    print("_dtAcc.userData 값3:${_dtAcc.userData}");
                   });
                 }); // 화면전환 코드
             },

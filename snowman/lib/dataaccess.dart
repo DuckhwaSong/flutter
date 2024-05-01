@@ -25,7 +25,7 @@ class dataAccess {
   Map<String, double> userData={
     "data_total":0.0,"data_use":0.0,"data_remain":0.0,"data_per":0.0,
     "call_total":0.0,"call_use":0.0,"call_remain":0.0,"call_per":0.0,
-    "msg_total":0.0,"msg_use":0.0,"msg_remain":0.0,"msg_per":0.0
+    "msg_total":0.0,"msg_use":0.0,"msg_remain":0.0,"msg_per":0.0,
     };
     
   httpCurl _curl = new httpCurl();
