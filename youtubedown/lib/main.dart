@@ -76,49 +76,67 @@ class _MyHomePageState extends State<MyHomePage> {
     print("==============================");
     print("${manifest}");
     print("==============================");
-    var streamInfo = manifest.muxed.withHighestBitrate();
-    //var streamInfo = manifest.muxed.withHighestQuality();
+    
+    /*var streamInfo = manifest.muxed.withHighestBitrate();
     print("==============================");
     print("streamInfo : ${streamInfo}");
     print("==============================");
+    */
 
     for (final stream in manifest.streams) {
       //final quality = stream.quality; // 해상도와 비트 전송률 정보 확인
-      print("==============================");
+      /*print("==============================");
       print("stream : ${stream.qualityLabel}");
+      //print("stream : ${stream.codec}");
+      //print("stream : ${stream}");
+      print("stream : ${stream.container}");
+      print("stream : ${stream.size}");
+      print("stream : ${stream.bitrate}");
       print("stream : ${stream.codec}");
-      print("stream : ${stream}");
-      //print("stream : ${stream.toJson()}");
+      print("stream : ${stream.runtimeType}");*/
+      if(stream.runtimeType.toString() == "AudioOnlyStreamInfo" && stream.codec.toString()=="audio/mp4; codecs=mp4a.40.2" && stream.container.toString()=="mp4"){
+        var audioStream = stream;
+        print("==============================");
+        print("audioStream : ${audioStream}");
+        print("stream : ${stream.toJson()}");
+        //print("stream : ${stream.");
+        print("==============================");
+        var audioFile = await ytExplode.videos.streamsClient.get(audioStream);
+        await _saveVideo(audioFile, "${video.title}_S");        
+      }
+      if(stream.runtimeType.toString() == "VideoOnlyStreamInfo" && stream.qualityLabel.toString()=="1080p60" && stream.container.toString()=="mp4"){
+        var videoStream = stream;
+        print("==============================");
+        print("videoStream:${videoStream}");
+        print("stream : ${stream.toJson()}");
+        print("==============================");
+        var videoFile = await ytExplode.videos.streamsClient.get(videoStream);
+        await _saveVideo(videoFile, "${video.title}_V");
+      }      
       print("==============================");
-      
     }
-
-    //var streamInfo = manifest.audioOnly.first;
-    //var audioStream = ytExplode.videos.streamsClient.get(streamInfo);
-    if (streamInfo != null) {
-      var videoStream = manifest.video;
-      //var videoFile = await ytExplode.videos.streamsClient.get(streamInfo);
-      print("==============================");
-      print("${videoStream}");
-      print("==============================");
-      //_saveVideo(videoFile, video.title);
-    }
+    print("==============================");
+    print("처리완료!");
+    print("==============================");    
   }
-  void _saveVideo(var videoFile, String videoTitle) async {
-    final appDocDir = await getApplicationDocumentsDirectory();
-      var file = File(appDocDir.path + '/$videoTitle.mp4');
-      var fileStream = file.openWrite();
-      await videoFile.pipe(fileStream);
-      print("==============================");
-      print("${file}");
-      print("==============================");
-      // Close the file.
-      await fileStream.flush();
-      await fileStream.close();
+  Future<void> _saveVideo(var videoFile, String videoTitle) async {
+    //final appDocDir = await getApplicationDocumentsDirectory();
+    //final Directory appDocDir = await getApplicationDocumentsDirectory();
+    final Directory tempDir = await getTemporaryDirectory();
+    //final Directory? downloadsDir = await getDownloadsDirectory();
+    var file = File(tempDir.path + '/$videoTitle.mp4');
+    var fileStream = file.openWrite();
+    await videoFile.pipe(fileStream);
+    print("==============================");
+    print("${file}");
+    print("==============================");
+    // Close the file.
+    await fileStream.flush();
+    await fileStream.close();
   }
 
   //  파일을 저장하는 함수 - dart:io 필요
-  void _saveVideo_bak(var videoFile, String videoTitle) async {
+  void _saveVideo_back(var videoFile, String videoTitle) async {
     final appDocDir = await getApplicationDocumentsDirectory();
     final savePath = appDocDir.path + '/$videoTitle.mp4';
 
