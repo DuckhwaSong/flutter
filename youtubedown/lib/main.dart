@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';  // 유튜브 라이브러리
 import 'dart:io'; //파일 입출력을 위한 라이브러리
 import 'package:path_provider/path_provider.dart';
+//import 'package:archive/archive.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 
 
 void main() {
   runApp(const MyApp());
+  
 }
 
 class MyApp extends StatelessWidget {
@@ -36,6 +40,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const MyHomePage(title: 'YouTube Video Download'),
+      builder: EasyLoading.init(),
     );
   }
 }
@@ -65,13 +70,20 @@ class _MyHomePageState extends State<MyHomePage> {
   //Map<String, dynamic> input = Map<String, dynamic>();
   String _youtube_url = "";
 
+  Directory? _tempDir;
+  Directory? _downloadDir;
+  bool isVisible = false; // Initially, the text is hidden
+  bool isChecked = false; // Initially, the text is hidden
+
   // 유튜브 다운로드 함수 구현 - youtube_explode_dart.dart 필요
-  void _downloadVideo(String url) async {
+  Future<bool> _downloadVideo(String url) async {
     var ytExplode = YoutubeExplode();
     var video = await ytExplode.videos.get(url);
     print("==============================");
     print("${video}");
     print("==============================");
+    //return false;
+
     var manifest = await ytExplode.videos.streamsClient.getManifest(video.id);
     print("==============================");
     print("${manifest}");
@@ -83,17 +95,12 @@ class _MyHomePageState extends State<MyHomePage> {
     print("==============================");
     */
 
+    var videoFile = null;
+    var audioFile = null;
     for (final stream in manifest.streams) {
       //final quality = stream.quality; // 해상도와 비트 전송률 정보 확인
       /*print("==============================");
-      print("stream : ${stream.qualityLabel}");
-      //print("stream : ${stream.codec}");
-      //print("stream : ${stream}");
-      print("stream : ${stream.container}");
-      print("stream : ${stream.size}");
-      print("stream : ${stream.bitrate}");
-      print("stream : ${stream.codec}");
-      print("stream : ${stream.runtimeType}");*/
+      */
       if(stream.runtimeType.toString() == "AudioOnlyStreamInfo" && stream.codec.toString()=="audio/mp4; codecs=mp4a.40.2" && stream.container.toString()=="mp4"){
         var audioStream = stream;
         print("==============================");
@@ -101,28 +108,56 @@ class _MyHomePageState extends State<MyHomePage> {
         print("stream : ${stream.toJson()}");
         //print("stream : ${stream.");
         print("==============================");
-        var audioFile = await ytExplode.videos.streamsClient.get(audioStream);
-        await _saveVideo(audioFile, "${video.title}_S");        
+        audioFile = await ytExplode.videos.streamsClient.get(audioStream);
+        await _saveStrem(audioFile, "${video.title}_S");        
       }
       if(stream.runtimeType.toString() == "VideoOnlyStreamInfo" && stream.qualityLabel.toString()=="1080p60" && stream.container.toString()=="mp4"){
         var videoStream = stream;
         print("==============================");
+        print("stream : ${stream.qualityLabel}");
+        //print("stream : ${stream.codec}");
+        //print("stream : ${stream}");
+        print("stream : ${stream.container}");
+        print("stream : ${stream.size}");
+        print("stream : ${stream.bitrate}");
+        print("stream : ${stream.codec}");
+        print("stream : ${stream.runtimeType}");
         print("videoStream:${videoStream}");
         print("stream : ${stream.toJson()}");
         print("==============================");
-        var videoFile = await ytExplode.videos.streamsClient.get(videoStream);
-        await _saveVideo(videoFile, "${video.title}_V");
+        videoFile = await ytExplode.videos.streamsClient.get(videoStream);
+        await _saveStrem(videoFile, "${video.title}_V");
       }      
       print("==============================");
     }
     print("==============================");
     print("처리완료!");
     print("==============================");    
+    
+    return await _saveStremToFile(video.title.toString(),videoFile,audioFile);
   }
-  Future<void> _saveVideo(var videoFile, String videoTitle) async {
-    //final Directory appDocDir = await getApplicationDocumentsDirectory(); // 엡디렉토리
+
+  Future<bool> _saveStremToFile(String videoTitle, var videoFile, var audioFile) async {
     final Directory tempDir = await getTemporaryDirectory();    // 임시 디렉토리
-    //final Directory? downloadsDir = await getDownloadsDirectory();  // 다운로드 디렉토리
+
+    if(audioFile == null) {
+      await _saveStrem(videoFile, "${videoTitle}");
+    }
+    else {
+      // 비디오파일 처리
+      await _saveStrem(videoFile, "${videoTitle}_V");
+
+      // 오디오파일 처리
+      await _saveStrem(audioFile, "${videoTitle}_A");
+
+      // 병합처리
+    }
+    return true;
+  }
+
+  Future<void> _saveStrem(var videoFile, String videoTitle) async {
+    final Directory tempDir = await getTemporaryDirectory();    // 임시 디렉토리
+    if(_tempDir == null) _tempDir = tempDir;
     var file = File(tempDir.path + '/$videoTitle.mp4');
     var fileStream = file.openWrite();
     await videoFile.pipe(fileStream);
@@ -147,13 +182,58 @@ class _MyHomePageState extends State<MyHomePage> {
     // Show a success message or handle errors here
   }
 
+  // 윈도우용
+  Future<void> _mergeVideo1(String videoFile,String audioFile) async {
+    //final Directory appDocDir = await getApplicationDocumentsDirectory(); // 엡디렉토리
+    /*final Directory? downloadsDir = await getDownloadsDirectory();  // 다운로드 디렉토리
+    if(_downloadDir == null) _downloadDir = downloadsDir;
+
+    // assets 폴더에서 실행 파일 가져오기
+    final assetFile = await rootBundle.load('asset/ffmpeg_win/bin/ffmpeg.exe');
+
+    // 임시 폴더에 실행 파일 복사
+    final tempDir = Directory.systemTemp;
+    final tempFile = await tempDir.createTemp();
+    await tempFile
+    .writeAsBytes(assetFile.readAsBytes());
+    
+    // 별도의 프로세스로 실행
+    final process = await Process.start(tempFile.path, ['arguments']);*/
+  }
+
+  // 안드로이드/IOS
+  void _mergeVideo2(String videoFile,String audioFile){
+
+  }
+
   // 다운로드 버튼을 누를경우 실해되는 함수
   void _youtubeDownloader() {
     setState(() {
       print("${_youtube_url}");
     });
-    _downloadVideo(_youtube_url);
+    _downloadVideo(_youtube_url).then((result){
+      if(result) print("처리완료-성공");
+      else print("처리완료-실패");
+    });
   }
+
+  // 체크 버튼을 누를경우 실해되는 함수
+  void _youtubeCheck() {
+    _easyloading(true);
+    if(!isVisible) isVisible = true;
+    else isVisible = false;
+    setState(() {
+      print("${_youtube_url}");
+    });
+    //_easyloading(false);
+  }
+
+  // 체크 버튼을 누를경우 실해되는 함수
+  void _easyloading(bool onoff) {
+    if(onoff) EasyLoading.showSuccess('Great Success!');
+    else EasyLoading.dismiss();
+  }
+  bool value = false;
 
   @override
   Widget build(BuildContext context) {
@@ -166,32 +246,66 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
+            const SelectableText(
               'Input youtube url : ex>https://www.youtube.com/watch?v=_9JbnvOF-fM',
             ),
             SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-            SizedBox(
-              width: 450,
-              child: TextField(
-                controller: _idController,
-                //obscureText: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'https://www.youtube.com/watch?v=**********',
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 450,
+                  child: TextField(
+                    controller: _idController,
+                    //obscureText: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'https://www.youtube.com/watch?v=**********',
+                    ),
+                    onChanged:(text){
+                      _youtube_url=text;
+                    }
+                  ),
                 ),
-                onChanged:(text){
-                  _youtube_url=text;
-                }
-              ),
+                SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                FloatingActionButton(
+                  onPressed: _youtubeCheck,
+                  tooltip: 'check',
+                  child: const Icon(Icons.check),
+                ),
+              ]
             ),
+            Visibility(
+                visible: isVisible, // Determines visibility
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Text("Hello, World! : ${Colors.cyan}"),
+                    Checkbox(
+                      value: isChecked,
+                      onChanged: (bool? value) {
+                        isChecked = value!;
+                        setState(() {
+                          print("isChecked : ${isChecked}");
+                        });
+                      },
+                    )
+                  ]
+                ),
+              ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _youtubeDownloader,
-        tooltip: 'Download',
-        child: const Icon(Icons.download),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButton: Visibility(
+        visible: isVisible, // Determines visibility
+        child: FloatingActionButton(
+          onPressed: null,
+          //onPressed: _youtubeDownloader,
+          tooltip: 'Download',
+          backgroundColor: Colors.cyan,
+          child: const Icon(Icons.download),
+        ),
+      ),
     );
   }
 }
