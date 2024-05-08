@@ -219,6 +219,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 체크 버튼을 누를경우 실해되는 함수
   void _youtubeCheck() {
+    //someList = [7, 8, 1, 5, 5];
+    //userData['123']=0.05;
+    //_List.add('1212');
+    
+    //print("index : ${_List}");
+    _List = ['1.dkfkax','2.dkfkaz','3.dkfka0'];
+    _List.add(_youtube_url);
     _easyloading(true);
     if(!isVisible) isVisible = true;
     else isVisible = false;
@@ -234,6 +241,30 @@ class _MyHomePageState extends State<MyHomePage> {
     else EasyLoading.dismiss();
   }
   bool value = false;
+
+  Map<String, double> userData={};
+  List<String> _List = [];
+  List<Widget> _createChildren() {
+    return new List<Widget>.generate(_List.length, (int index) {
+      //print("index : ${index} => ${someList[index]}");
+      return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Checkbox(
+                  value: isChecked,
+                  onChanged: (bool? value) {
+                    isChecked = value!;
+                    setState(() {
+                      print("isChecked : ${isChecked}");
+                    });
+                  },
+                ),
+                SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                Text(_List[index].toString()),
+              ]
+            );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -279,7 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 visible: isVisible, // Determines visibility
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
+                  children: _createChildren()/*[
                     Text("Hello, World! : ${Colors.cyan}"),
                     Checkbox(
                       value: isChecked,
@@ -290,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         });
                       },
                     )
-                  ]
+                  ]*/
                 ),
               ),
           ],
