@@ -70,7 +70,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final TextEditingController _idController = TextEditingController();
   //Map<String, dynamic> input = Map<String, dynamic>();
-  Map<String, dynamic> _userData={"_youtube_url":"","isChecked":false,"isVisible":false,"_List2":null};
+  Map<String, dynamic> _userData={
+    "isChecked":false,"isVisible":false,"_List2":null,"_formWidth":450
+    ,"_youtube_url":""    
+    };
 
   Directory? _tempDir;
   Directory? _downloadDir;
@@ -235,6 +238,11 @@ class _MyHomePageState extends State<MyHomePage> {
     _userData['radioButton'] = ['소리만 다운로드(음악)','동영상 다운로드(간편)','동영상 다운로드(최고화질)'];
     _easyloading(true);
     _mediaInfo(_userData['_youtube_url']);
+    print("manifest : ${_userData['manifest']}");
+    
+
+    print("load : _youtubeCheck");
+
     if(!isVisible) isVisible = true;
     //else isVisible = false;
     setState(() {
@@ -250,17 +258,67 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   bool value = false;
 
-  
-  //SingingCharacter? _character = SingingCharacter.lafayette;
-  Char _char = Char.A; // 라디오 버튼의 선택 초기화
-  Fruit? _fruit = Fruit.Apple;
+
+
+  List<Widget> _itemLists() {
+    print("load : _itemLists");
+    List<Widget> vari=[];
+    int idx=0;
+    if(_userData['manifest']!=null){
+      
+      print("streams[0] : ${_userData['manifest'].streams[0]}");
+
+      for (final stream in _userData['manifest'].streams) {
+
+
+        if("${stream.container}" =="mp4"){
+          print("stream[${idx}] : ${stream}");
+          print("stream : ${stream.toJson()}");
+          /*print("==============================");
+          print("stream : ${stream.qualityLabel}");
+          //print("stream : ${stream.codec}");
+          //print("stream : ${stream}");
+          print("stream.container : ${stream.container}");
+          print("stream : ${stream.size}");
+          print("stream : ${stream.bitrate}");
+          print("stream : ${stream.codec}");
+          print("stream : ${stream.runtimeType}");
+          //print("videoStream:${videoStream}");
+          print("stream : ${stream.toJson()}");
+          print("==============================");*/
+          vari.add(Center(
+            child: Container(
+              width: 520,
+              child: ListTile(
+                onTap: (()=>{
+                  print("stream[${idx}] : ${stream}")
+                }),
+                leading: const Icon(Icons.download),
+                trailing: const Text(
+                  "DOWN",
+                  style: TextStyle(color: Colors.green, fontSize: 15),
+                ),
+                title: Text("[${idx}] ${stream} ${stream.size}")
+              ),
+            ),
+          ));
+        }
+        idx++;
+      }
+    }
+    
+    return vari;
+  }
+
 
   List<String> _List = [];
+  /*
   List<Widget> _itemDropdown() {
     //String dropdownValue=_List.first;
+    //String dropdownValue="";
     return [
       DropdownButton<String?>(
-        //value: dropdownValue,
+        //value: dropdownValue??null,
         icon: const Icon(Icons.arrow_downward),
         elevation: 16,
         style: const TextStyle(color: Colors.deepPurple),
@@ -272,6 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             //dropdownValue = newValue!;
             print(newValue);
+            //this.value=newValue;
           });
         },
         items: _List.map<DropdownMenuItem<String>>((String value) {
@@ -329,7 +388,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ]
             );
     });
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -376,6 +435,14 @@ class _MyHomePageState extends State<MyHomePage> {
               visible: isVisible, // Determines visibility
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                children: _itemLists()
+              ),
+            ),             
+            /*SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+            Visibility(
+              visible: isVisible, // Determines visibility
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: _itemDropdown()
               ),
             ),            
@@ -384,20 +451,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 visible: isVisible, // Determines visibility
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: _createChildren()/*[
-                    Text("Hello, World! : ${Colors.cyan}"),
-                    Checkbox(
-                      value: isChecked,
-                      onChanged: (bool? value) {
-                        isChecked = value!;
-                        setState(() {
-                          print("isChecked : ${isChecked}");
-                        });
-                      },
-                    )
-                  ]*/
+                  children: _createChildren()
                 ),
-              ),
+              ),*/
           ],
         ),
       ),
