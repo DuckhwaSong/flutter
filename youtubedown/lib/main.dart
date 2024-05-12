@@ -62,18 +62,29 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
+enum Char { A, B, C, D }
+enum Fruit { Apple, Grapes, Pear, Lemon }
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   final TextEditingController _idController = TextEditingController();
   //Map<String, dynamic> input = Map<String, dynamic>();
-  String _youtube_url = "";
+  Map<String, dynamic> _userData={"_youtube_url":"","isChecked":false,"isVisible":false,"_List2":null};
 
   Directory? _tempDir;
   Directory? _downloadDir;
   bool isVisible = false; // Initially, the text is hidden
-  bool isChecked = false; // Initially, the text is hidden
+  
+
+
+  // 유튜브 다운로드를 위한 정보 확인 - youtube_explode_dart.dart 필요
+  Future<bool> _mediaInfo(String url) async {
+    _userData['ytExplode'] = YoutubeExplode();
+    _userData['video'] = await _userData['ytExplode'].videos.get(url);
+    _userData['manifest'] = await _userData['ytExplode'].videos.streamsClient.getManifest(_userData['video'].id);
+    return true;
+  }
 
   // 유튜브 다운로드 함수 구현 - youtube_explode_dart.dart 필요
   Future<bool> _downloadVideo(String url) async {
@@ -209,9 +220,9 @@ class _MyHomePageState extends State<MyHomePage> {
   // 다운로드 버튼을 누를경우 실해되는 함수
   void _youtubeDownloader() {
     setState(() {
-      print("${_youtube_url}");
+      print("${_userData['_youtube_url']}");
     });
-    _downloadVideo(_youtube_url).then((result){
+    _downloadVideo(_userData['_youtube_url']).then((result){
       if(result) print("처리완료-성공");
       else print("처리완료-실패");
     });
@@ -219,18 +230,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 체크 버튼을 누를경우 실해되는 함수
   void _youtubeCheck() {
-    //someList = [7, 8, 1, 5, 5];
-    //userData['123']=0.05;
-    //_List.add('1212');
-    
-    //print("index : ${_List}");
-    _List = ['1.dkfkax','2.dkfkaz','3.dkfka0'];
-    _List.add(_youtube_url);
+    _List = ['소리만 다운로드(음악)','동영상 다운로드(간편)','동영상 다운로드(최고화질)'];
+    _List.add(_userData['_youtube_url']);
+    _userData['radioButton'] = ['소리만 다운로드(음악)','동영상 다운로드(간편)','동영상 다운로드(최고화질)'];
     _easyloading(true);
+    _mediaInfo(_userData['_youtube_url']);
     if(!isVisible) isVisible = true;
-    else isVisible = false;
+    //else isVisible = false;
     setState(() {
-      print("${_youtube_url}");
+      print("${_userData['_youtube_url']}");
     });
     //_easyloading(false);
   }
@@ -242,8 +250,65 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   bool value = false;
 
-  Map<String, double> userData={};
+  
+  //SingingCharacter? _character = SingingCharacter.lafayette;
+  Char _char = Char.A; // 라디오 버튼의 선택 초기화
+  Fruit? _fruit = Fruit.Apple;
+
   List<String> _List = [];
+  List<Widget> _itemDropdown() {
+    //String dropdownValue=_List.first;
+    return [
+      DropdownButton<String?>(
+        //value: dropdownValue,
+        icon: const Icon(Icons.arrow_downward),
+        elevation: 16,
+        style: const TextStyle(color: Colors.deepPurple),
+        underline: Container(
+          height: 2,
+          color: Colors.deepPurpleAccent,
+        ),
+        onChanged: (String? newValue) {          
+          setState(() {
+            //dropdownValue = newValue!;
+            print(newValue);
+          });
+        },
+        items: _List.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      )
+    ];
+  }
+
+  List<Widget> _createChildren2() {
+    return new List<Widget>.generate(_List.length, (int index) {
+      //print("index : ${index} => ${_List[index].toString()}");
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget> [
+          ListTile(
+            title: const Text('Apple'),
+            leading: Radio<Fruit>(
+              value: Fruit.Apple,
+              groupValue: _fruit,
+              onChanged: (Fruit? value) {
+                setState(() {
+                  _fruit = value;
+                });
+              }
+            ),
+          ),
+          SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+          Text(_List[index].toString()),          
+        ]
+      );
+    });
+  }
+
   List<Widget> _createChildren() {
     return new List<Widget>.generate(_List.length, (int index) {
       //print("index : ${index} => ${someList[index]}");
@@ -251,11 +316,11 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Checkbox(
-                  value: isChecked,
+                  value: _userData['isChecked']??false,
                   onChanged: (bool? value) {
-                    isChecked = value!;
+                    _userData['isChecked'] = value!;
                     setState(() {
-                      print("isChecked : ${isChecked}");
+                      print("isChecked : ${_userData['isChecked']}");
                     });
                   },
                 ),
@@ -278,7 +343,7 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const SelectableText(
-              'Input youtube url : ex>https://www.youtube.com/watch?v=_9JbnvOF-fM',
+              'Input youtube url : ex>https://www.youtube.com/watch?v=[YOUTUBECD]',
             ),
             SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
             Row(
@@ -294,7 +359,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       labelText: 'https://www.youtube.com/watch?v=**********',
                     ),
                     onChanged:(text){
-                      _youtube_url=text;
+                      _userData['_youtube_url']=text;
                     }
                   ),
                 ),
@@ -306,6 +371,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ]
             ),
+            SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+            Visibility(
+              visible: isVisible, // Determines visibility
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: _itemDropdown()
+              ),
+            ),            
+            SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
             Visibility(
                 visible: isVisible, // Determines visibility
                 child: Column(
@@ -330,8 +404,8 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: Visibility(
         visible: isVisible, // Determines visibility
         child: FloatingActionButton(
-          onPressed: null,
-          //onPressed: _youtubeDownloader,
+          //onPressed: null,
+          onPressed: _youtubeDownloader,
           tooltip: 'Download',
           backgroundColor: Colors.cyan,
           child: const Icon(Icons.download),
