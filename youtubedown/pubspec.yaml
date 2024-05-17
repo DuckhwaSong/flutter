@@ -35,6 +35,7 @@ dependencies:
   path_provider: ^2.1.2 
   #archive: ^3.5.0  # 압축라이브러리
   flutter_easyloading: ^3.0.5
+  #cmd: ^0.0.8
 
 dev_dependencies:
   flutter_test:
