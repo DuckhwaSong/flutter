@@ -64,8 +64,6 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-enum Char { A, B, C, D }
-enum Fruit { Apple, Grapes, Pear, Lemon }
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
@@ -73,57 +71,58 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _idController = TextEditingController();
   //Map<String, dynamic> input = Map<String, dynamic>();
   Map<String, dynamic> _userData={
-    "isChecked":false,"isVisible":false,"_List2":null,"_formWidth":450
-    ,"_youtube_url":""    
+    "isChecked":false,"isVisible":false,"_List2":null,"_formWidth":450,"_listWidth":520
+    ,"_youtube_url":"","audioFile":"","vidioFile":"","mergeAble":false
     };
 
   Directory? _tempDir;
   Directory? _downloadDir;
   bool isVisible = false; // Initially, the text is hidden
   
+  // 
+  Future<bool> _mergeMuxFile() async{
+    print("load : _mergeMuxFile");
 
-  /*Future<bool> _excuteTest() async {
-    // CLI 프로그램 실행
-    final process = await Process.start('echo', ['123']);
-
-    // 결과 처리
-    stdout.watch((event) {
-      print(event);
-    });
-
-    stderr.watch((event) {
-      print('Error: $event');
-    });
-
-    // 종료 대기
-    await process.exitCode;
+    if(Platform.isAndroid){     // 안드로이드 처리
+      //
+    }
+    if(Platform.isWindows){     // 윈도우즈 처리   
+      String command = 'D:\\ffmpeg_win\\bin\\ffmpeg.exe';   // ffmpeg 경로 입력! => 윈도우용은 이게 최선?
+      List<String> argV = ["-i",_userData['audioFile'],"-i",_userData['vidioFile'],"-c","copy",_userData['vidioFile'].replaceAll(".m4v",".mp4")];
+      _excuteCmd(command,argV).then((stdout){
+        print("stdout : ${stdout}");
+        EasyLoading.showSuccess('merge Muxing File Success!');
+      });
+    }
     return true;
-  }*/
+  }
 
-  Future<void> _excuteTest() async {
-    print("load : _excuteTest");
-    final process = await Process.run('ipconfig', ['127.0.0.1']);
-    //var cleanProcess = await Process.run('flutter', ["clean", "--verbose"],workingDirectory: "${flutterFolder.path}");
-    print("==============================");
-    //process.stdout.listen((event) => print("event : ${event}")); // Print data events
-    
-      print('Exit code: ${process.exitCode}');
-      print('Stdout: ${process.stdout}');
-      print('Stderr: ${process.stderr}');
-    
-    process.stdout.listen((event) {
-      print(event);
-      //print("event : ${event.toString()}");
-    });
-    
-    print("==============================");
-    //await process.stdout; // Wait for process to finish
-    //process.stdout
+
+
+  // 실행 명령어 처리
+  Future<String> _excuteCmd(String command,List<String> argV) async {
+    print("load : _excuteCmd");
+    var process;
+    try{
+      process = await Process.run(command, argV);
+    } catch(error){
+      print("==============================");
+      print(error);
+      print("==============================");
+      return "";
+    }
+    //print("==============================");
+    //print('Exit code: ${process.exitCode}');
+    //print('Stdout: ${process.stdout}');
+    //print('Stderr: ${process.stderr}');
+    //print("==============================");
+    return process.stdout.toString();
   }
 
   Future<bool> _reset() async {
     _userData={
-    "isChecked":false,"isVisible":false,"_List2":null,"_youtube_url":""    
+    "isChecked":false,"isVisible":false,"_List2":null,"_formWidth":450,"_listWidth":520
+    ,"_youtube_url":"","audioFile":"","vidioFile":"","mergeAble":false
     };
     isVisible = false;
     _idController.clear();
@@ -189,7 +188,20 @@ class _MyHomePageState extends State<MyHomePage> {
     await fileStream.flush();
     await fileStream.close();
 
-    _excuteTest();
+    if(fileExt=="m4a") _userData['audioFile'] = tempDir.path + '/$streamTitle.$fileExt';  // AudioOnly 다운로드 기록
+    if(fileExt=="m4v") _userData['vidioFile'] = tempDir.path + '/$streamTitle.$fileExt';  // VideoOnly 다운로드 기록
+
+    if(_userData['audioFile']!="" && _userData['vidioFile']!="" ){
+      print("==============================");
+      print("audioFile : ${_userData['audioFile']}");
+      print("vidioFile : ${_userData['vidioFile']}");
+      print("==============================");
+
+      _userData['mergeAble'] = true;
+      setState(() {
+        print("mergeAble : ${_userData['mergeAble']}");
+      });
+    }
     return true;    
   }
 
@@ -542,8 +554,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
                 SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
                 FloatingActionButton(
-                  //onPressed: _youtubeCheck,
-                  onPressed:_excuteTest,
+                  onPressed: _youtubeCheck,
+                  //onPressed:_excuteTest,
                   tooltip: 'check',
                   child: const Icon(Icons.check),
                 ),
@@ -556,10 +568,33 @@ class _MyHomePageState extends State<MyHomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: _itemLists()
               ),
-            ),             
+            ),
+            SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+            Visibility(
+              visible: _userData['mergeAble'], // Determines visibility
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 520,
+                      child: ListTile(
+                        onTap: _mergeMuxFile,
+                        leading: const Icon(Icons.download),
+                        trailing: const Text(
+                          "DOWN",
+                          style: TextStyle(color: Colors.green, fontSize: 15),
+                        ),
+                        title: Text("merge audioFile + vidioFile => muxFile")
+                      ),
+                    ),
+                  ),
+                ]
+              ),
+            ),            
             /*SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
             Visibility(
-              visible: isVisible, // Determines visibility
+              visible: _userData['mergeAble'], // Determines visibility
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: _itemDropdown()
