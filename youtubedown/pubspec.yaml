@@ -36,6 +36,7 @@ dependencies:
   #archive: ^3.5.0  # 압축라이브러리
   flutter_easyloading: ^3.0.5
   #cmd: ^0.0.8
+  downloadsfolder: ^0.0.5
 
 dev_dependencies:
   flutter_test:
@@ -60,7 +61,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - asset/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

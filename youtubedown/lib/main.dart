@@ -3,10 +3,10 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';  // 유튜브 �
 import 'dart:io'; //파일 입출력을 위한 라이브러리
 import 'package:path_provider/path_provider.dart';
 //import 'package:archive/archive.dart';
-//import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 //import 'package:cmd/cmd.dart';  // 커맨드 실행 라이브러리
 import 'dart:io';
+import 'package:downloadsfolder/downloadsfolder.dart';
 
 
 void main() {
@@ -87,11 +87,23 @@ class _MyHomePageState extends State<MyHomePage> {
       //
     }
     if(Platform.isWindows){     // 윈도우즈 처리   
-      String command = 'D:\\ffmpeg_win\\bin\\ffmpeg.exe';   // ffmpeg 경로 입력! => 윈도우용은 이게 최선?
-      List<String> argV = ["-i",_userData['audioFile'],"-i",_userData['vidioFile'],"-c","copy",_userData['vidioFile'].replaceAll(".m4v",".mp4")];
-      _excuteCmd(command,argV).then((stdout){
-        print("stdout : ${stdout}");
+
+      // assets 폴더에서 실행 파일 가져오기
+      final assetFile = await File('asset/MP4Box.exe').readAsBytes();
+      if (assetFile == null) {
+        throw Exception('Assets 파일을 읽을 수 없습니다.');
+      }
+      // 임시 폴더에 실행 파일 복사
+      final tempDir = Directory.systemTemp;
+      final tempFile = await tempDir.createTemp();
+      final tmpFile = await File(tempFile.path+'/MP4Box.exe').writeAsBytes(assetFile);
+      // 별도의 프로세스로 실행       // mp4box -add ccm.m4a -add ccm.m4v ccm.mp4
+      List<String> argV = ["-add",_userData['audioFile'],"-add",_userData['vidioFile'],_userData['vidioFile'].replaceAll(".m4v",".mp4")];
+      _excuteCmd(tempFile.path+'/MP4Box.exe',argV).then((stdout){
         EasyLoading.showSuccess('merge Muxing File Success!');
+        tmpFile.delete();
+        sleep(Duration(seconds: 1)); // 1초 지연
+        tempFile.delete();
       });
     }
     return true;
@@ -137,8 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // 유튜브 다운로드를 위한 정보 확인 - youtube_explode_dart.dart 필요
   Future<bool> _mediaInfo(String url) async {
-    _userData['ytExplode'] = YoutubeExplode();
-    
+    _userData['ytExplode'] = YoutubeExplode();    
     try{
       _userData['video'] = await _userData['ytExplode'].videos.get(url);
     } catch(error){
@@ -150,31 +161,26 @@ class _MyHomePageState extends State<MyHomePage> {
     _userData['manifest'] = await _userData['ytExplode'].videos.streamsClient.getManifest(_userData['video'].id);
     return true;
   }
+
+  // 유튜브 다운로드 - youtube_explode_dart.dart 필요
   Future<bool> _downloadMedia(var stream) async {
     String fileExt = "";
     if("${stream.runtimeType}"=="MuxedStreamInfo") fileExt="mp4";
     if("${stream.runtimeType}"=="AudioOnlyStreamInfo") fileExt="m4a";
     if("${stream.runtimeType}"=="VideoOnlyStreamInfo") fileExt="m4v";
     String streamTitle = _userData['video'].title.toString();
+    EasyLoading.showProgress(0.3, status: "Now download ${streamTitle}...");
     
     var streamFile = await _userData['ytExplode'].videos.streamsClient.get(stream);
     //final Directory tempDir = await getTemporaryDirectory();    // 임시 디렉토리
-    final Directory tempDir = await getApplicationDocumentsDirectory(); // 엡디렉토리
-    //final Directory? downloadsDir = await getDownloadsDirectory();  // 다운로드 디렉토리    
-    if(_tempDir == null) _tempDir = tempDir;
-    
+    //final Directory tempDir = await getApplicationDocumentsDirectory(); // 엡디렉토리
+    //final Directory? downloadsDir = await getDownloadsDirectory();  // 다운로드 디렉토리
+    final Directory tempDir = await getDownloadsDirectory()??await getApplicationDocumentsDirectory();
 
     // 파일불가 특수문자 제거
     // ex>[ENG SUB] 제니 ㄴㄴ 쟤니. (feat.박진주) | #놀면뭐하니? #유재석 #하하 #주우재 #박진주 MBC240511 방송.mp4
-    streamTitle = streamTitle.replaceAll("\\","");
-    streamTitle = streamTitle.replaceAll("/","");
-    streamTitle = streamTitle.replaceAll(":","");
-    streamTitle = streamTitle.replaceAll("?","");
-    streamTitle = streamTitle.replaceAll("*","");
-    streamTitle = streamTitle.replaceAll("\"","");
-    streamTitle = streamTitle.replaceAll("<","");
-    streamTitle = streamTitle.replaceAll(">","");
-    streamTitle = streamTitle.replaceAll("|","");
+    streamTitle = streamTitle.replaceAll("\\","").replaceAll("/","").replaceAll(":","").replaceAll("?","").replaceAll("*","");
+    streamTitle = streamTitle.replaceAll("\"","").replaceAll("<","").replaceAll(">","").replaceAll("|","");
 
     File file = File(tempDir.path + '/$streamTitle.$fileExt');
     var fileStream = file.openWrite();
@@ -184,6 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
     //print("streamFile : ${streamFile}");    
     print(" >> ${file}");
     print("==============================");
+    EasyLoading.showSuccess("${streamTitle} File Download Success!");
     // Close the file.
     await fileStream.flush();
     await fileStream.close();
@@ -205,169 +212,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return true;    
   }
 
-  Future<void> _saveStrem(var videoFile, String videoTitle) async {
-    final Directory tempDir = await getTemporaryDirectory();    // 임시 디렉토리
-    if(_tempDir == null) _tempDir = tempDir;
-    var file = File(tempDir.path + '/$videoTitle.mp4');
-    var fileStream = file.openWrite();
-    await videoFile.pipe(fileStream);
-    print("==============================");
-    print("${file}");
-    print("==============================");
-    // Close the file.
-    await fileStream.flush();
-    await fileStream.close();
-  }
-
-  
-
-  // 유튜브 다운로드 함수 구현 - youtube_explode_dart.dart 필요
-  /*
-  Future<bool> _downloadVideo(String url) async {
-    var ytExplode = YoutubeExplode();
-    var video = await ytExplode.videos.get(url);
-    print("==============================");
-    print("${video}");
-    print("==============================");
-    //return false;
-
-    var manifest = await ytExplode.videos.streamsClient.getManifest(video.id);
-    print("==============================");
-    print("${manifest}");
-    print("==============================");
-    
-    var streamInfo = manifest.muxed.withHighestBitrate();
-    print("==============================");
-    print("streamInfo : ${streamInfo}");
-    print("==============================");
-    
-
-    var videoFile = null;
-    var audioFile = null;
-    for (final stream in manifest.streams) {
-      //final quality = stream.quality; // 해상도와 비트 전송률 정보 확인
-      print("==============================");
-      
-      if(stream.runtimeType.toString() == "AudioOnlyStreamInfo" && stream.codec.toString()=="audio/mp4; codecs=mp4a.40.2" && stream.container.toString()=="mp4"){
-        var audioStream = stream;
-        print("==============================");
-        print("audioStream : ${audioStream}");
-        print("stream : ${stream.toJson()}");
-        //print("stream : ${stream.");
-        print("==============================");
-        audioFile = await ytExplode.videos.streamsClient.get(audioStream);
-        await _saveStrem(audioFile, "${video.title}_S");        
-      }
-      if(stream.runtimeType.toString() == "VideoOnlyStreamInfo" && stream.qualityLabel.toString()=="1080p60" && stream.container.toString()=="mp4"){
-        var videoStream = stream;
-        print("==============================");
-        print("stream : ${stream.qualityLabel}");
-        //print("stream : ${stream.codec}");
-        //print("stream : ${stream}");
-        print("stream : ${stream.container}");
-        print("stream : ${stream.size}");
-        print("stream : ${stream.bitrate}");
-        print("stream : ${stream.codec}");
-        print("stream : ${stream.runtimeType}");
-        print("videoStream:${videoStream}");
-        print("stream : ${stream.toJson()}");
-        print("==============================");
-        videoFile = await ytExplode.videos.streamsClient.get(videoStream);
-        await _saveStrem(videoFile, "${video.title}_V");
-      }      
-      print("==============================");
-    }
-    print("==============================");
-    print("처리완료!");
-    print("==============================");    
-    
-    return await _saveStremToFile(video.title.toString(),videoFile,audioFile);
-  }
-
-  Future<bool> _saveStremToFile(String videoTitle, var videoFile, var audioFile) async {
-    final Directory tempDir = await getTemporaryDirectory();    // 임시 디렉토리
-
-    if(audioFile == null) {
-      await _saveStrem(videoFile, "${videoTitle}");
-    }
-    else {
-      // 비디오파일 처리
-      await _saveStrem(videoFile, "${videoTitle}_V");
-
-      // 오디오파일 처리
-      await _saveStrem(audioFile, "${videoTitle}_A");
-
-      // 병합처리
-    }
-    return true;
-  }
-
-  Future<void> _saveStrem(var videoFile, String videoTitle) async {
-    final Directory tempDir = await getTemporaryDirectory();    // 임시 디렉토리
-    if(_tempDir == null) _tempDir = tempDir;
-    var file = File(tempDir.path + '/$videoTitle.mp4');
-    var fileStream = file.openWrite();
-    await videoFile.pipe(fileStream);
-    print("==============================");
-    print("${file}");
-    print("==============================");
-    // Close the file.
-    await fileStream.flush();
-    await fileStream.close();
-  }*/
-/*
-
-  //  파일을 저장하는 함수 - dart:io 필요
-  void _saveVideo_back(var videoFile, String videoTitle) async {
-    final appDocDir = await getApplicationDocumentsDirectory();
-    final savePath = appDocDir.path + '/$videoTitle.mp4';
-
-    final videoBytes = await videoFile.readAsBytes();
-    final File file = File(savePath);
-
-    await file.writeAsBytes(videoBytes);
-
-    // Show a success message or handle errors here
-  }
-
-  // 윈도우용
-  Future<void> _mergeVideo1(String videoFile,String audioFile) async {
-    //final Directory appDocDir = await getApplicationDocumentsDirectory(); // 엡디렉토리
-    final Directory? downloadsDir = await getDownloadsDirectory();  // 다운로드 디렉토리
-    if(_downloadDir == null) _downloadDir = downloadsDir;
-
-    // assets 폴더에서 실행 파일 가져오기
-    final assetFile = await rootBundle.load('asset/ffmpeg_win/bin/ffmpeg.exe');
-
-    // 임시 폴더에 실행 파일 복사
-    final tempDir = Directory.systemTemp;
-    final tempFile = await tempDir.createTemp();
-    await tempFile
-    .writeAsBytes(assetFile.readAsBytes());
-    
-    // 별도의 프로세스로 실행
-    final process = await Process.start(tempFile.path, ['arguments']);
-  }
-
-  // 안드로이드/IOS
-  void _mergeVideo2(String videoFile,String audioFile){
-
-  }
-*/
-  // 다운로드 버튼을 누를경우 실해되는 함수
-  void _youtubeDownloader() {
-    setState(() {
-      print("${_userData['_youtube_url']}");
-    });
-    /*_downloadVideo(_userData['_youtube_url']).then((result){
-      if(result) print("처리완료-성공");
-      else print("처리완료-실패");
-    });*/
-  }
-
   // 체크 버튼을 누를경우 실해되는 함수
   void _youtubeCheck() {
-    _easyloading(true);
+    EasyLoading.showProgress(0.3, status: 'Now download profiling...');
     _mediaInfo(_userData['_youtube_url']).then((result){
       if(result) EasyLoading.showSuccess('mediaInfo Loading Success!');
       else EasyLoading.showError('mediaInfo Loading Error!');
@@ -379,15 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
     print("load : _youtubeCheck");
   }
 
-  // 체크 버튼을 누를경우 실해되는 함수
-  void _easyloading(bool onoff) {
-    if(onoff) EasyLoading.showProgress(0.3, status: 'downloading...');
-    else EasyLoading.dismiss();
-  }
-  bool value = false;
-
-
-
+  // 다운로드 리스트 구현 함수
   List<Widget> _itemLists() {
     print("load : _itemLists");
     List<Widget> vari=[];
