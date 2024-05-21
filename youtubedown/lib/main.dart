@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';  // 유튜브 라이브러리
 import 'dart:io'; //파일 입출력을 위한 라이브러리
 import 'package:path_provider/path_provider.dart';
-//import 'package:archive/archive.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-//import 'package:cmd/cmd.dart';  // 커맨드 실행 라이브러리
 import 'dart:io';
 import 'package:downloadsfolder/downloadsfolder.dart';
 
 
 void main() {
   runApp(const MyApp());
-  
 }
 
 class MyApp extends StatelessWidget {
@@ -23,49 +20,24 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'YouTube Video Download',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'YouTube Video Download'),
+      home: const MyAppPage(title: 'YouTube Video Download'),
       builder: EasyLoading.init(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
+class MyAppPage extends StatefulWidget {
+  const MyAppPage({super.key, required this.title});
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyAppPage> createState() => _MyAppPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyAppPageState extends State<MyAppPage> {
   int _counter = 0;
 
   final TextEditingController _idController = TextEditingController();
@@ -310,31 +282,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }).toList(),
       )
     ];
-  }
-
-  List<Widget> _createChildren2() {
-    return new List<Widget>.generate(_List.length, (int index) {
-      //print("index : ${index} => ${_List[index].toString()}");
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget> [
-          ListTile(
-            title: const Text('Apple'),
-            leading: Radio<Fruit>(
-              value: Fruit.Apple,
-              groupValue: _fruit,
-              onChanged: (Fruit? value) {
-                setState(() {
-                  _fruit = value;
-                });
-              }
-            ),
-          ),
-          SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-          Text(_List[index].toString()),          
-        ]
-      );
-    });
   }
 
   List<Widget> _createChildren() {
