@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:io';
 import 'package:downloadsfolder/downloadsfolder.dart';
+import 'package:flutter/services.dart' show rootBundle;           // 빌드후 asset 접근
 
 
 void main() {
@@ -47,37 +48,85 @@ class _MyAppPageState extends State<MyAppPage> {
     ,"_youtube_url":"","audioFile":"","vidioFile":"","mergeAble":false
     };
 
-  Directory? _tempDir;
-  Directory? _downloadDir;
+  //Directory? _tempDir;
+  //Directory? _downloadDir;
   bool isVisible = false; // Initially, the text is hidden
   
-  // 
+  // 파일로 로그를 남긴다.
+  Future<void> _writeLog(String message) async {
+    // 타임스템프
+    final timestamp = DateTime.now().toIso8601String();
+    String date = timestamp.substring(0,13);
+    final directory = await getApplicationDocumentsDirectory();
+    final path = '${directory.path}/${date}_youtubedown_log.txt';
+    final file = File(path);
+
+    // 로그 메시지에 타임스탬프 추가
+    final logMessage = '$timestamp: $message\n';
+
+    // 로그 메시지를 파일에 작성
+    await file.writeAsString(logMessage, mode: FileMode.append);
+
+    print("==============================");
+    print(message);
+    print("==============================");
+  }
+
+  // 소리와 동영상을 병합한다
   Future<bool> _mergeMuxFile() async{
-    print("load : _mergeMuxFile");
+    _writeLog("load : _mergeMuxFile");
 
     if(Platform.isAndroid){     // 안드로이드 처리
       //
     }
-    if(Platform.isWindows){     // 윈도우즈 처리   
+    else if(Platform.isWindows){     // 윈도우즈 처리   
+      _writeLog("Platform : isWindows");
 
+      //String path = await rootBundle.loadString('asset/MP4Box.exe');
+      //_writeLog("asset_path : ${path}");
+
+      // 애셋 파일 로드
+      final byteData = await rootBundle.load('asset/MP4Box.exe');
+      final buffer = byteData.buffer;
+
+      // 파일 시스템의 임시 디렉토리 경로 가져오기
+      final tempDir = await getTemporaryDirectory();
+  
+      // 바이너리 데이터를 파일로 저장
+      final tempFile = File('${tempDir.path}/MP4Box.exe');
+      await tempFile.writeAsBytes(buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+
+      /*
       // assets 폴더에서 실행 파일 가져오기
-      final assetFile = await File('asset/MP4Box.exe').readAsBytes();
+      var assetFile;
+      try{
+        assetFile = await File(filePath).readAsBytes();
+      } catch(error){
+        _writeLog("error : ${error}");
+        return false;
+      }      
+      //final assetFile = await File('asset/MP4Box.exe').readAsBytes();
       if (assetFile == null) {
+        _writeLog("Exception : Assets 파일을 읽을 수 없습니다");
         throw Exception('Assets 파일을 읽을 수 없습니다.');
       }
       // 임시 폴더에 실행 파일 복사
       final tempDir = Directory.systemTemp;
       final tempFile = await tempDir.createTemp();
       final tmpFile = await File(tempFile.path+'/MP4Box.exe').writeAsBytes(assetFile);
+      */
       // 별도의 프로세스로 실행       // mp4box -add ccm.m4a -add ccm.m4v ccm.mp4
       List<String> argV = ["-add",_userData['audioFile'],"-add",_userData['vidioFile'],_userData['vidioFile'].replaceAll(".m4v",".mp4")];
-      _excuteCmd(tempFile.path+'/MP4Box.exe',argV).then((stdout){
+      _excuteCmd('${tempDir.path}/MP4Box.exe',argV).then((stdout){
         EasyLoading.showSuccess('merge Muxing File Success!');
-        tmpFile.delete();
-        sleep(Duration(seconds: 1)); // 1초 지연
         tempFile.delete();
+        sleep(Duration(seconds: 1)); // 1초 지연
+        tempDir.delete();
       });
     }
+
+    else _writeLog("미지원 Platform : ${Platform}");
+
     return true;
   }
 
@@ -85,14 +134,12 @@ class _MyAppPageState extends State<MyAppPage> {
 
   // 실행 명령어 처리
   Future<String> _excuteCmd(String command,List<String> argV) async {
-    print("load : _excuteCmd");
+    _writeLog("load : _excuteCmd");
     var process;
     try{
       process = await Process.run(command, argV);
     } catch(error){
-      print("==============================");
-      print(error);
-      print("==============================");
+      _writeLog("error : ${error}");
       return "";
     }
     //print("==============================");
@@ -114,7 +161,7 @@ class _MyAppPageState extends State<MyAppPage> {
     setState(() {
       EasyLoading.showToast('Reset'); // 문자열만 출력
       //EasyLoading.showInfo('Try Insert Youtube code OR Youtube URL');   // !아이콘과 함께 출력
-      print("load : _reset");
+      _writeLog("load : _reset");
     });    
     return true;
   }
@@ -125,9 +172,7 @@ class _MyAppPageState extends State<MyAppPage> {
     try{
       _userData['video'] = await _userData['ytExplode'].videos.get(url);
     } catch(error){
-      print("==============================");
-      print("error : ${error}");
-      print("==============================");
+      _writeLog("error : ${error}");
       return false;
     }
     _userData['manifest'] = await _userData['ytExplode'].videos.streamsClient.getManifest(_userData['video'].id);
@@ -157,11 +202,7 @@ class _MyAppPageState extends State<MyAppPage> {
     File file = File(tempDir.path + '/$streamTitle.$fileExt');
     var fileStream = file.openWrite();
     await streamFile.pipe(fileStream);
-    print("==============================");
-    print("stream : ${stream}");
-    //print("streamFile : ${streamFile}");    
-    print(" >> ${file}");
-    print("==============================");
+    _writeLog("stream : ${stream} >> ${file}");
     EasyLoading.showSuccess("${streamTitle} File Download Success!");
     // Close the file.
     await fileStream.flush();
@@ -171,14 +212,11 @@ class _MyAppPageState extends State<MyAppPage> {
     if(fileExt=="m4v") _userData['vidioFile'] = tempDir.path + '/$streamTitle.$fileExt';  // VideoOnly 다운로드 기록
 
     if(_userData['audioFile']!="" && _userData['vidioFile']!="" ){
-      print("==============================");
-      print("audioFile : ${_userData['audioFile']}");
-      print("vidioFile : ${_userData['vidioFile']}");
-      print("==============================");
+      _writeLog("audioFile : ${_userData['audioFile']} \n vidioFile : ${_userData['vidioFile']} ");
 
       _userData['mergeAble'] = true;
       setState(() {
-        print("mergeAble : ${_userData['mergeAble']}");
+        _writeLog("mergeAble : ${_userData['mergeAble']}");
       });
     }
     return true;    
@@ -192,15 +230,15 @@ class _MyAppPageState extends State<MyAppPage> {
       else EasyLoading.showError('mediaInfo Loading Error!');
       isVisible = result;
       setState(() {
-        print("load : _mediaInfo");
+        _writeLog("load : _mediaInfo");
       });
     });
-    print("load : _youtubeCheck");
+    _writeLog("load : _youtubeCheck");
   }
 
   // 다운로드 리스트 구현 함수
   List<Widget> _itemLists() {
-    print("load : _itemLists");
+    _writeLog("load : _itemLists");
     List<Widget> vari=[];
     int idx=0;
     if(_userData['manifest']!=null){      
@@ -213,7 +251,7 @@ class _MyAppPageState extends State<MyAppPage> {
               ("${stream.runtimeType}" =="AudioOnlyStreamInfo")
             )          
          ){                  // 필요한 미디어만 추출(필터)
-          print("stream[${idx}] : ${stream}");
+          /*print("stream[${idx}] : ${stream}");
           print("==============================");
           print("stream.qualityLabel : ${stream.qualityLabel}");
           //print("stream.videoResolution : ${stream.videoResolution}");
@@ -225,7 +263,7 @@ class _MyAppPageState extends State<MyAppPage> {
           print("stream.runtimeType : ${stream.runtimeType}");
           //print("videoStream:${videoStream}");
           print("stream : ${stream.toJson()}");
-          print("==============================");
+          print("==============================");*/
           vari.add(Center(
             child: Container(
               width: 520,
