@@ -109,10 +109,13 @@ class dataAccess {
 
   Map<String, double> dataRefresh(Map<String, dynamic> responseData){
     //Map<String, double> userData={};
+
+    print("responseData 값x:${responseData}"); 
+
     userData['data_total'] = double.parse(responseData['data0'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['data_use'] = double.parse(responseData['data1'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['data_remain'] = double.parse(responseData['data2'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
-    userData['data_per'] =  ((userData['data_remain']??0.0)/(userData['data_total']??0.0)*100).roundToDouble()/100;
+    userData['data_per'] =  ((userData['data_remain']??0.0)/(userData['data_total']??0.0)*100).roundToDouble()/100;    
     userData['call_total'] = double.parse(responseData['data3'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['call_use'] = double.parse(responseData['data4'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['call_remain'] = double.parse(responseData['data5'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
@@ -121,6 +124,10 @@ class dataAccess {
     userData['msg_use'] = double.parse(responseData['data7'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출
     userData['msg_remain'] = double.parse(responseData['data8'].toString().replaceAll(RegExp(r'[^\d\.]'), ""));  // 숫자만 추출                
     userData['msg_per'] =  ((userData['msg_remain']??0.0)/(userData['msg_total']??0.0)*100).roundToDouble()/100;
+
+    if((userData['data_per']??0.0)>1) userData['data_per']=(userData['data_per']??0.0)/1000;    // GB가 아닌MB로 표기될 경우 오류 방지
+    if((userData['call_per']??0.0)>1) userData['call_per']=(userData['call_per']??0.0)/60;      // 분이 아닌 초로 표기될 경우 오류 방지
+
     return userData;
   }
 
