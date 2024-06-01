@@ -6,6 +6,7 @@ import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'dart:io';
 import 'package:downloadsfolder/downloadsfolder.dart';
 import 'package:flutter/services.dart' show rootBundle;           // 빌드후 asset 접근
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 
 
 void main() {
@@ -77,7 +78,10 @@ class _MyAppPageState extends State<MyAppPage> {
     _writeLog("load : _mergeMuxFile");
 
     if(Platform.isAndroid){     // 안드로이드 처리
-      //
+      String executeCommand = "-i ${_userData['audioFile']} -i ${_userData['vidioFile']} -c ${_userData['vidioFile'].replaceAll(".m4v",".mp4")}";
+      await FFmpegKit.execute(executeCommand);
+      EasyLoading.showSuccess('merge Muxing File Success!');
+      //EasyLoading.showError('Now not supported! Wait next version!');
     }
     else if(Platform.isWindows){     // 윈도우즈 처리   
       _writeLog("Platform : isWindows");
@@ -352,87 +356,94 @@ class _MyAppPageState extends State<MyAppPage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const SelectableText(
-              'Input youtube url : ex>https://www.youtube.com/watch?v=[YOUTUBECD]',
-            ),
-            SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  width: 450,
-                  child: TextField(
-                    controller: _idController,
-                    //obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'https://www.youtube.com/watch?v=**********',
-                    ),
-                    onChanged:(text){
-                      _userData['_youtube_url']=text;
-                    }
-                  ),
-                ),
-                SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-                FloatingActionButton(
-                  onPressed: _youtubeCheck,
-                  //onPressed:_excuteTest,
-                  tooltip: 'check',
-                  child: const Icon(Icons.check),
-                ),
-              ]
-            ),
-            SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-            Visibility(
-              visible: isVisible, // Determines visibility
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: _itemLists()
+        child: SingleChildScrollView(                  // 화면을 스크롤 할 수 있도록 감싸준다  
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              const SelectableText(
+                'Input youtube url : ex>https://www.youtube.com/watch?v=[YOUTUBECD]',
+                style: TextStyle(
+                  fontSize: 10,
+                  //fontWeight: FontWeight.bold,
+                  //color: Colors.orange,
+                )
               ),
-            ),
-            SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-            Visibility(
-              visible: _userData['mergeAble'], // Determines visibility
-              child: Column(
+              SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 520,
-                      child: ListTile(
-                        onTap: _mergeMuxFile,
-                        leading: const Icon(Icons.download),
-                        trailing: const Text(
-                          "DOWN",
-                          style: TextStyle(color: Colors.green, fontSize: 15),
-                        ),
-                        title: Text("merge audioFile + vidioFile => muxFile")
+                  SizedBox(
+                    width: 280,
+                    child: TextField(
+                      controller: _idController,
+                      //obscureText: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'https://www.youtube.com/watch?v=**********',
                       ),
+                      onChanged:(text){
+                        _userData['_youtube_url']=text;
+                      }
                     ),
+                  ),
+                  SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                  FloatingActionButton(
+                    onPressed: _youtubeCheck,
+                    //onPressed:_excuteTest,
+                    tooltip: 'check',
+                    child: const Icon(Icons.check),
                   ),
                 ]
               ),
-            ),            
-            /*SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-            Visibility(
-              visible: _userData['mergeAble'], // Determines visibility
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: _itemDropdown()
-              ),
-            ),            
-            SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
-            Visibility(
+              SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+              Visibility(
                 visible: isVisible, // Determines visibility
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: _createChildren()
+                  children: _itemLists()
                 ),
-              ),*/
-          ],
+              ),
+              SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+              Visibility(
+                visible: _userData['mergeAble'], // Determines visibility
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 520,
+                        child: ListTile(
+                          onTap: _mergeMuxFile,
+                          leading: const Icon(Icons.download),
+                          trailing: const Text(
+                            "DOWN",
+                            style: TextStyle(color: Colors.green, fontSize: 15),
+                          ),
+                          title: Text("merge audioFile + vidioFile => muxFile")
+                        ),
+                      ),
+                    ),
+                  ]
+                ),
+              ),            
+              /*SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+              Visibility(
+                visible: _userData['mergeAble'], // Determines visibility
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: _itemDropdown()
+                ),
+              ),            
+              SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+              Visibility(
+                  visible: isVisible, // Determines visibility
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: _createChildren()
+                  ),
+                ),*/
+            ],
+          ),
         ),
       ),
       floatingActionButton: Visibility(
@@ -440,7 +451,7 @@ class _MyAppPageState extends State<MyAppPage> {
         child: FloatingActionButton(
           //onPressed: null,
           onPressed: _reset,
-          tooltip: 'Download',
+          tooltip: 'Reset',
           backgroundColor: Colors.cyan,
           child: const Icon(Icons.restart_alt),
         ),
