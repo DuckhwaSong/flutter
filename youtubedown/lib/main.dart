@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:downloadsfolder/downloadsfolder.dart';
 import 'package:flutter/services.dart' show rootBundle;           // 빌드후 asset 접근
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 
 void main() {
@@ -52,9 +53,22 @@ class _MyAppPageState extends State<MyAppPage> {
   //Directory? _tempDir;
   //Directory? _downloadDir;
   bool isVisible = false; // Initially, the text is hidden
-  
+
+  // 파일 읽기 쓰기 권한 처리
+  Future<bool> _requestPermissions() async {
+    var status = await Permission.storage.status;
+    if (!status.isGranted) {
+      await Permission.storage.request();
+    }
+
+    if (await Permission.storage.isGranted) return true;
+    else return false;
+  }
+
   // 파일로 로그를 남긴다.
   Future<void> _writeLog(String message) async {
+    bool storageAccess = await _requestPermissions();
+    if(!storageAccess) return null;
     // 타임스템프
     final timestamp = DateTime.now().toIso8601String();
     String date = timestamp.substring(0,13);
@@ -185,6 +199,9 @@ class _MyAppPageState extends State<MyAppPage> {
 
   // 유튜브 다운로드 - youtube_explode_dart.dart 필요
   Future<bool> _downloadMedia(var stream) async {
+    bool storageAccess = await _requestPermissions();
+    if(!storageAccess) return storageAccess;
+
     String fileExt = "";
     if("${stream.runtimeType}"=="MuxedStreamInfo") fileExt="mp4";
     if("${stream.runtimeType}"=="AudioOnlyStreamInfo") fileExt="m4a";
@@ -350,6 +367,7 @@ class _MyAppPageState extends State<MyAppPage> {
 
   @override
   Widget build(BuildContext context) {
+    _requestPermissions();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,

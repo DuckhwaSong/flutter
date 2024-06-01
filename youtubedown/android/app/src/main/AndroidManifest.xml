@@ -1,9 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET" />                  <!-- 외부통신 허용 -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>     <!-- 스토리지 쓰기 허용 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>      <!-- 스토리지 읽기 허용 -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>   <!-- 스토리지 관리 허용(추가-android:requestLegacyExternalStorage="true") -->
+
     <application
         android:label="youtubedown"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:requestLegacyExternalStorage="true"
+        >
         <activity
             android:name=".MainActivity"
             android:exported="true"
