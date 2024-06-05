@@ -37,6 +37,7 @@ dependencies:
   downloadsfolder: ^0.0.5
   ffmpeg_kit_flutter: 5.1.0
   permission_handler: ^11.0.0
+  external_path: ^1.0.3
 
 dev_dependencies:
   flutter_test:

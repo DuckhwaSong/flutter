@@ -20,6 +20,7 @@ cd testapp
 
 [빌드(build\windows\runner\Release)]
 flutter build windows
+flutter build apk
 
 [런]
 flutter run -d windows

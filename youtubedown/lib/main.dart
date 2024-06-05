@@ -8,6 +8,7 @@ import 'package:downloadsfolder/downloadsfolder.dart';
 import 'package:flutter/services.dart' show rootBundle;           // 빌드후 asset 접근
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:external_path/external_path.dart';                // 안드로이드 download DIR 사용을 위한 페키지
 
 
 void main() {
@@ -65,6 +66,30 @@ class _MyAppPageState extends State<MyAppPage> {
     else return false;
   }
 
+  //다운로드 폴더 경로 받아오기 - 안드로이드에서 문제발생으로 추가처리
+  Future<String> _getPublicDownloadPath() async {
+    String? downloadDirPath = null;
+
+      // 만약 다운로드 폴더가 존재하지 않는다면 앱내 파일 패스를 대신 주도록한다.
+      if (Platform.isAndroid) {
+        downloadDirPath = await ExternalPath.getExternalStoragePublicDirectory(ExternalPath.DIRECTORY_DOWNLOADS);
+        Directory dir = Directory(downloadDirPath);
+
+        if (!dir.existsSync()) {
+          downloadDirPath = (await getExternalStorageDirectory())!.path;
+        }
+      } else if (Platform.isIOS) {
+        // downloadDirPath = (await getApplicationSupportDirectory())!.path;
+        downloadDirPath = (await getApplicationDocumentsDirectory())!.path;
+      }
+      else {
+        final Directory tempDir = await getDownloadsDirectory()??await getApplicationDocumentsDirectory();
+        downloadDirPath = tempDir.path;
+      }
+
+    return downloadDirPath!;
+  }
+
   // 파일로 로그를 남긴다.
   Future<void> _writeLog(String message) async {
     bool storageAccess = await _requestPermissions();
@@ -72,8 +97,9 @@ class _MyAppPageState extends State<MyAppPage> {
     // 타임스템프
     final timestamp = DateTime.now().toIso8601String();
     String date = timestamp.substring(0,13);
-    final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/${date}_youtubedown_log.txt';
+    //final directory = await getApplicationDocumentsDirectory();
+    String directory_path = await _getPublicDownloadPath();
+    final path = '${directory_path}/${date}_youtubedown_log.txt';
     final file = File(path);
 
     // 로그 메시지에 타임스탬프 추가
@@ -92,7 +118,8 @@ class _MyAppPageState extends State<MyAppPage> {
     _writeLog("load : _mergeMuxFile");
 
     if(Platform.isAndroid){     // 안드로이드 처리
-      String executeCommand = "-i ${_userData['audioFile']} -i ${_userData['vidioFile']} -c ${_userData['vidioFile'].replaceAll(".m4v",".mp4")}";
+      String executeCommand = "-i '${_userData['audioFile']}' -i '${_userData['vidioFile']}' -c:v copy -c:a aac -strict experimental '${_userData['vidioFile'].replaceAll(".m4v",".mp4")}'";
+      _writeLog("FFmpegKit.execute : ${executeCommand}");
       await FFmpegKit.execute(executeCommand);
       EasyLoading.showSuccess('merge Muxing File Success!');
       //EasyLoading.showError('Now not supported! Wait next version!');
@@ -213,14 +240,15 @@ class _MyAppPageState extends State<MyAppPage> {
     //final Directory tempDir = await getTemporaryDirectory();    // 임시 디렉토리
     //final Directory tempDir = await getApplicationDocumentsDirectory(); // 엡디렉토리
     //final Directory? downloadsDir = await getDownloadsDirectory();  // 다운로드 디렉토리
-    final Directory tempDir = await getDownloadsDirectory()??await getApplicationDocumentsDirectory();
+    //final Directory tempDir = await getDownloadsDirectory()??await getApplicationDocumentsDirectory();
+    String tempDir_path = await _getPublicDownloadPath();
 
     // 파일불가 특수문자 제거
     // ex>[ENG SUB] 제니 ㄴㄴ 쟤니. (feat.박진주) | #놀면뭐하니? #유재석 #하하 #주우재 #박진주 MBC240511 방송.mp4
     streamTitle = streamTitle.replaceAll("\\","").replaceAll("/","").replaceAll(":","").replaceAll("?","").replaceAll("*","");
     streamTitle = streamTitle.replaceAll("\"","").replaceAll("<","").replaceAll(">","").replaceAll("|","");
 
-    File file = File(tempDir.path + '/$streamTitle.$fileExt');
+    File file = File(tempDir_path + '/$streamTitle.$fileExt');
     var fileStream = file.openWrite();
     await streamFile.pipe(fileStream);
     _writeLog("stream : ${stream} >> ${file}");
@@ -229,8 +257,8 @@ class _MyAppPageState extends State<MyAppPage> {
     await fileStream.flush();
     await fileStream.close();
 
-    if(fileExt=="m4a") _userData['audioFile'] = tempDir.path + '/$streamTitle.$fileExt';  // AudioOnly 다운로드 기록
-    if(fileExt=="m4v") _userData['vidioFile'] = tempDir.path + '/$streamTitle.$fileExt';  // VideoOnly 다운로드 기록
+    if(fileExt=="m4a") _userData['audioFile'] = tempDir_path + '/$streamTitle.$fileExt';  // AudioOnly 다운로드 기록
+    if(fileExt=="m4v") _userData['vidioFile'] = tempDir_path + '/$streamTitle.$fileExt';  // VideoOnly 다운로드 기록
 
     if(_userData['audioFile']!="" && _userData['vidioFile']!="" ){
       _writeLog("audioFile : ${_userData['audioFile']} \n vidioFile : ${_userData['vidioFile']} ");
