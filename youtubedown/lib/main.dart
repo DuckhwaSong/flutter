@@ -3,8 +3,7 @@ import 'package:youtube_explode_dart/youtube_explode_dart.dart';  // 유튜브 �
 import 'dart:io'; //파일 입출력을 위한 라이브러리
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'dart:io';
-import 'package:downloadsfolder/downloadsfolder.dart';
+//import 'package:downloadsfolder/downloadsfolder.dart';
 import 'package:flutter/services.dart' show rootBundle;           // 빌드후 asset 접근
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -57,13 +56,12 @@ class _MyAppPageState extends State<MyAppPage> {
 
   // 파일 읽기 쓰기 권한 처리
   Future<bool> _requestPermissions() async {
-    var status = await Permission.storage.status;
+    var status = await Permission.manageExternalStorage.status;
     if (!status.isGranted) {
-      await Permission.storage.request();
+      await Permission.manageExternalStorage.request();
     }
-
-    if (await Permission.storage.isGranted) return true;
-    else return false;
+    if (await Permission.manageExternalStorage.isGranted) return true;
+    else return false;    
   }
 
   //다운로드 폴더 경로 받아오기 - 안드로이드에서 문제발생으로 추가처리
@@ -92,7 +90,8 @@ class _MyAppPageState extends State<MyAppPage> {
 
   // 파일로 로그를 남긴다.
   Future<void> _writeLog(String message) async {
-    bool storageAccess = await _requestPermissions();
+    // 디버깅 후 로그 남기는 부분 제외!
+    /*bool storageAccess = await _requestPermissions();
     if(!storageAccess) return null;
     // 타임스템프
     final timestamp = DateTime.now().toIso8601String();
@@ -107,7 +106,7 @@ class _MyAppPageState extends State<MyAppPage> {
 
     // 로그 메시지를 파일에 작성
     await file.writeAsString(logMessage, mode: FileMode.append);
-
+    */
     print("==============================");
     print(message);
     print("==============================");
@@ -116,13 +115,18 @@ class _MyAppPageState extends State<MyAppPage> {
   // 소리와 동영상을 병합한다
   Future<bool> _mergeMuxFile() async{
     _writeLog("load : _mergeMuxFile");
+    
+    EasyLoading.showProgress(0.3, status: 'Now download merge Muxing File ...');
 
-    if(Platform.isAndroid){     // 안드로이드 처리
+    if(Platform.isAndroid || Platform.isIOS ){     // 안드로이드 처리
       String executeCommand = "-i '${_userData['audioFile']}' -i '${_userData['vidioFile']}' -c:v copy -c:a aac -strict experimental '${_userData['vidioFile'].replaceAll(".m4v",".mp4")}'";
       _writeLog("FFmpegKit.execute : ${executeCommand}");
-      await FFmpegKit.execute(executeCommand);
-      EasyLoading.showSuccess('merge Muxing File Success!');
-      //EasyLoading.showError('Now not supported! Wait next version!');
+      //await FFmpegKit.execute(executeCommand);
+      //EasyLoading.showSuccess('merge Muxing File Success!');
+      FFmpegKit.execute(executeCommand).then((session) async {
+        //final returnCode = await session.getReturnCode();
+        EasyLoading.showSuccess('merge Muxing File Success!');
+      });      
     }
     else if(Platform.isWindows){     // 윈도우즈 처리   
       _writeLog("Platform : isWindows");
@@ -228,7 +232,6 @@ class _MyAppPageState extends State<MyAppPage> {
   Future<bool> _downloadMedia(var stream) async {
     bool storageAccess = await _requestPermissions();
     if(!storageAccess) return storageAccess;
-
     String fileExt = "";
     if("${stream.runtimeType}"=="MuxedStreamInfo") fileExt="mp4";
     if("${stream.runtimeType}"=="AudioOnlyStreamInfo") fileExt="m4a";
@@ -242,6 +245,10 @@ class _MyAppPageState extends State<MyAppPage> {
     //final Directory? downloadsDir = await getDownloadsDirectory();  // 다운로드 디렉토리
     //final Directory tempDir = await getDownloadsDirectory()??await getApplicationDocumentsDirectory();
     String tempDir_path = await _getPublicDownloadPath();
+
+    print("==============================");
+    print(tempDir_path);
+    print("==============================");
 
     // 파일불가 특수문자 제거
     // ex>[ENG SUB] 제니 ㄴㄴ 쟤니. (feat.박진주) | #놀면뭐하니? #유재석 #하하 #주우재 #박진주 MBC240511 방송.mp4

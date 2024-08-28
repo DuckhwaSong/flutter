@@ -49,3 +49,9 @@ flutter pub get
 3. cmd > adb connect 127.0.0.1:5555
 4. 안드로이드 실행 > flutter run -d android > 실행가능 디바이스 안내
 5. flutter run -d 127.0.0.1:5555
+
+[안드로이드 스튜디오 - ADB 사용법]
+1. 안드로이드 스튜디오 설치
+2. 애뮬레이터 실행
+3. > flutter run -d android > 실행가능 디바이스 안내
+4. > flutter run -d emulator-5554
