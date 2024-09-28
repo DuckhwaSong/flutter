@@ -302,7 +302,7 @@ class _MyAppPageState extends State<MyAppPage> {
       for (final stream in _userData['manifest'].streams) {
         if("${stream.container}" =="mp4" && //"${stream.qualityLabel}" !="tiny"
             (
-              ("${stream.runtimeType}" =="VideoOnlyStreamInfo" && int.parse("${stream.qualityLabel}".replaceAll(RegExp(r'[^\d\.]'), ""))>=1080) ||
+              ("${stream.runtimeType}" =="VideoOnlyStreamInfo" && int.parse("${stream.qualityLabel}".replaceAll(RegExp(r'[^\d\.]'), ""))>=0) ||
               ("${stream.runtimeType}" =="MuxedStreamInfo" ) ||
               ("${stream.runtimeType}" =="AudioOnlyStreamInfo")
             )          
