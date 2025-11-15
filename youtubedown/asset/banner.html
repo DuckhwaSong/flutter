@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+ </head>
+ <body>
+ 	<div class='center' style="text-align:center;">
+  <script src="https://ads-partners.coupang.com/g.js"></script>
+<script>
+fetch('https://ifconfig.me/ip')
+.then((response) => response.text())//읽어온 데이터를 json으로 변환
+.then((IP) => {
+	const ip2id = IP.split('.').join('');
+	//console.log(ip2id);
+	new PartnersCoupang.G({"id":916777,"trackingCode":"AF7734185","width":"100%","height":"100%","subId":ip2id});
+	new PartnersCoupang.G({"id":916776,"trackingCode":"AF7734185","width":"100%","height":"100%","subId":ip2id});
+	new PartnersCoupang.G({"id":916750,"trackingCode":"AF7734185","width":"100%","height":"100%","subId":ip2id});
+});
+alert(1212);
+</script>
+	<div>
+ </body>
+</html>

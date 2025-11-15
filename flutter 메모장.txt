@@ -28,7 +28,8 @@ flutter run -d windows
 [소스 수정 후 콘솔에서 r누르면 리로드 됨]
 lib/main.dart
 
-[pubspec.yaml 갱신]
+[pubspec.yaml 갱신/패키지 재설치]
+flutter clean
 flutter pub get
 
 
@@ -48,10 +49,21 @@ flutter pub get
 2. 설정>고급기능설정>ADB 활성화
 3. cmd > adb connect 127.0.0.1:5555
 4. 안드로이드 실행 > flutter run -d android > 실행가능 디바이스 안내
-5. flutter run -d 127.0.0.1:5555
+5. flutter run -d 127.0.0.1:5555 --verbose
 
 [안드로이드 스튜디오 - ADB 사용법]
 1. 안드로이드 스튜디오 설치
 2. 애뮬레이터 실행
 3. > flutter run -d android > 실행가능 디바이스 안내
 4. > flutter run -d emulator-5554
+
+[업데이트 후 윈도우 충돌날 경우]
+> flutter pub upgrade win32
+> flutter pub outdated
+
+
+[JDK 경로 설정]
+> flutter config --jdk-dir=<JDK 경로>
+
+flutter config --android-sdk "C:\Android\Sdk"
+C:\Program Files\Android\Android Studio2

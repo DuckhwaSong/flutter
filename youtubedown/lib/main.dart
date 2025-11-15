@@ -5,9 +5,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 //import 'package:downloadsfolder/downloadsfolder.dart';
 import 'package:flutter/services.dart' show rootBundle;           // 빌드후 asset 접근
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';              // ffmpeg_kit 구버전
+//import 'package:ffmpeg_kit_flutter_new/ffmpeg_kit.dart';          // ffmpeg_kit 새버전
 import 'package:permission_handler/permission_handler.dart';
 import 'package:external_path/external_path.dart';                // 안드로이드 download DIR 사용을 위한 페키지
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';  // 웹뷰사용
+import 'package:url_launcher/url_launcher.dart';                  // 브라우저로 띄우기위함
 
 
 void main() {
@@ -400,6 +403,37 @@ class _MyAppPageState extends State<MyAppPage> {
     });
   }*/
 
+static const _bannerHtml = '''
+<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  body { margin:0; padding:0; }
+  .banner {
+    width:100%;
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family: sans-serif;
+    background:#222; color:#fff;
+  }
+  a {  }
+</style>
+</head>
+<body>
+  <div class="banner">  
+    <a href="https://link.coupang.com/a/cNC6fa" target="_blank" style="color:#00e0ff; text-decoration:none; font-weight:bold;">
+    쿠팡 쇼핑
+    </a>
+    <span>&nbsp;|&nbsp; </span>
+    <a href="https://buddy.oasis.co.kr/p/MTFhMDE3NzR" target="_blank" style="color:#6ba543; text-decoration:none; font-weight:bold;">오아시스 쇼핑</a>
+  </div>
+</body>
+</html>
+''';
+
   @override
   Widget build(BuildContext context) {
     _requestPermissions();
@@ -408,6 +442,136 @@ class _MyAppPageState extends State<MyAppPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
+        body: Column(
+          children: [
+            // ############################## 최상단 배너 ##############################
+            SizedBox(
+              height: 260,
+              child: InAppWebView(
+                initialData: InAppWebViewInitialData(data: _bannerHtml),
+                initialOptions: InAppWebViewGroupOptions(
+                  crossPlatform: InAppWebViewOptions(
+                    javaScriptEnabled: true,            // 중요: JS 허용
+                    //transparentBackground: true,
+                    //supportZoom: false,
+                    useShouldOverrideUrlLoading: true,
+                  ),
+                ),
+                shouldOverrideUrlLoading: (controller, navAction) async {
+                  final uri = navAction.request.url;
+                  print("==============================");
+                  print(uri);
+                  print("==============================");
+                  if (uri != null && uri.scheme.startsWith("http")) {
+                    // 외부 브라우저 실행
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                    return NavigationActionPolicy.CANCEL; // WebView에서는 열지 않음
+                  }
+                  return NavigationActionPolicy.ALLOW;
+                },
+              ),
+            ),
+            // ############################## 최상단 배너 ##############################
+
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(                  // 화면을 스크롤 할 수 있도록 감싸준다  
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      const SelectableText(
+                        'Input youtube url : ex>https://www.youtube.com/watch?v=[YOUTUBECD]',
+                        style: TextStyle(
+                          fontSize: 10,
+                          //fontWeight: FontWeight.bold,
+                          //color: Colors.orange,
+                        )
+                      ),
+                      SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 280,
+                            child: TextField(
+                              controller: _idController,
+                              //obscureText: true,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: 'https://www.youtube.com/watch?v=**********',
+                              ),
+                              onChanged:(text){
+                                _userData['_youtube_url']=text;
+                              }
+                            ),
+                          ),
+                          SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                          FloatingActionButton(
+                            onPressed: _youtubeCheck,
+                            //onPressed:_excuteTest,
+                            tooltip: 'check',
+                            child: const Icon(Icons.check),
+                          ),
+                        ]
+                      ),
+                      SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                      Visibility(
+                        visible: isVisible, // Determines visibility
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: _itemLists()
+                        ),
+                      ),
+                      SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                      Visibility(
+                        visible: _userData['mergeAble'], // Determines visibility
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Center(
+                              child: Container(
+                                width: 520,
+                                child: ListTile(
+                                  onTap: _mergeMuxFile,
+                                  leading: const Icon(Icons.download),
+                                  trailing: const Text(
+                                    "DOWN",
+                                    style: TextStyle(color: Colors.green, fontSize: 15),
+                                  ),
+                                  title: Text("merge audioFile + vidioFile => muxFile")
+                                ),
+                              ),
+                            ),
+                          ]
+                        ),
+                      ),            
+                      /*SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                      Visibility(
+                        visible: _userData['mergeAble'], // Determines visibility
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: _itemDropdown()
+                        ),
+                      ),            
+                      SizedBox(width: 10, height: 10,), // 여백을 만들기 위해서 넣음.
+                      Visibility(
+                          visible: isVisible, // Determines visibility
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: _createChildren()
+                          ),
+                        ),*/
+                    ],
+                  ),
+                ),                
+              ),
+            ),
+          ],
+        ),
+
+      /*
       body: Center(
         child: SingleChildScrollView(                  // 화면을 스크롤 할 수 있도록 감싸준다  
           child: Column(
@@ -499,6 +663,7 @@ class _MyAppPageState extends State<MyAppPage> {
           ),
         ),
       ),
+      */
       floatingActionButton: Visibility(
         visible: isVisible, // Determines visibility
         child: FloatingActionButton(
