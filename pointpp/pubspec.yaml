@@ -37,6 +37,7 @@ dependencies:
   flutter_inappwebview: ^6.1.5
   flutter_udid: ^4.0.0
   url_launcher: ^6.3.2
+  home_widget: ^0.8.1
 
 dev_dependencies:
   flutter_test:

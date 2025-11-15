@@ -61,6 +61,13 @@ flutter pub get
 > flutter pub upgrade win32
 > flutter pub outdated
 
+[앱-이름패키지-이름-변경]
+1. 설치 : flutter pub global activate rename
+2. 이름변경 : flutter pub global run rename setAppName --targets [바꿀 os들] --value "새로운 앱 이름"
+ - 이름변경 ex> flutter pub global run rename setAppName --targets android,ios,windows,macos,linux --value "새로운 앱 이름"
+3. 패키지 변경 : flutter pub global run rename setBundleId --targets [타겟 os들] --value "새로운 패키지 이름"
+ - 패키지 변경 ex> flutter pub global run rename setBundleId --targets android,ios,windows,macos,linux --value "새로운 패키지 이름"
+
 
 [JDK 경로 설정]
 > flutter config --jdk-dir=<JDK 경로>
