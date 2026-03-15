@@ -15,7 +15,7 @@ flutter config --enable-windows-desktop
 flutter doctor
 
 [프로젝트 생성]
-flutter create testapp
+flutter create --org com.yourdomain testapp
 cd testapp
 
 [빌드(build\windows\runner\Release)]
@@ -43,6 +43,7 @@ flutter pub get
  - 아이콘변경 : windows\runner\resources\app_icon.ico
  - apk빌드 : flutter build apk
  - 빌드위치 : build\app\outputs\flutter-apk\app-release.apk
+ - 빌드위치: build\windows\x64\runner\Release\[projectname].exe
 
 [블루스택 - ADB 사용법]
 1. 블루스택설치
