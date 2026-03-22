@@ -262,10 +262,10 @@ class _MyAppPageState extends State<MyAppPage> {
   // 유튜브 다운로드 - youtube_explode_dart.dart 필요
   Future<bool> _downloadMedia(var stream) async {
     bool storageAccess = await _requestPermissions();
-    /*if(!storageAccess) {
+    if(!storageAccess) {
       EasyLoading.showError('storageAccess Permissions Error!');
       return storageAccess;
-    }*/
+    }
     String fileExt = "";
     if("${stream.runtimeType}"=="MuxedStreamInfo") fileExt="mp4";
     if("${stream.runtimeType}"=="AudioOnlyStreamInfo") fileExt="m4a";
