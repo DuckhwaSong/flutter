@@ -12,7 +12,7 @@ import 'package:external_path/external_path.dart';                // 안드로�
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';  // 웹뷰사용
 import 'package:url_launcher/url_launcher.dart';                  // 브라우저로 띄우기위함
 
-
+//tt
 void main() {
   runApp(const MyApp());
 }
